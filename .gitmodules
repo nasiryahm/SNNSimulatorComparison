@@ -1,0 +1,15 @@
+[submodule "Simulators/Spike"]
+	path = Simulators/Spike
+	url = https://github.com/nasiryahm/Spike
+[submodule "Simulators/brian2"]
+	path = Simulators/brian2
+	url = https://github.com/brian-team/brian2
+[submodule "Simulators/nest-simulator"]
+	path = Simulators/nest-simulator
+	url = https://github.com/nest/nest-simulator.git
+[submodule "Simulators/auryn"]
+	path = Simulators/auryn
+	url = https://github.com/fzenke/auryn.git
+[submodule "Simulators/ANNarchy"]
+	path = Simulators/ANNarchy
+	url = https://github.com/ANNarchy/ANNarchy.git
