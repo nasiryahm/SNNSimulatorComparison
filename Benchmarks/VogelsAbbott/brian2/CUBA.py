@@ -61,12 +61,12 @@ Ce.connect('i<3200', p=0.02)
 Ci.connect('i>=3200', p=0.02)
 
 
-if (!fast):
+if (not fast):
     s_mon = SpikeMonitor(P)
 
 run(simtime * second)
 
-if (!fast):
+if (not fast):
     plot(s_mon.t/ms, s_mon.i, ',k')
     xlabel('Time (ms)')
     ylabel('Neuron index')
