@@ -27,6 +27,7 @@
 #include <string>
 #include <math.h>
 #include <getopt.h>
+#include <time.h>
 
 int main (int argc, char *argv[]){
 	// Getting options:
@@ -177,7 +178,7 @@ int main (int argc, char *argv[]){
 	BenchModel->AddSynapseGroup(EXCITATORY_NEURONS[0], INHIBITORY_NEURONS[0], EXC_OUT_SYN_PARAMS);
 	BenchModel->AddSynapseGroup(INHIBITORY_NEURONS[0], EXCITATORY_NEURONS[0], INH_OUT_SYN_PARAMS);
 	BenchModel->AddSynapseGroup(INHIBITORY_NEURONS[0], INHIBITORY_NEURONS[0], INH_OUT_SYN_PARAMS);
-	BenchModel->AddSynapseGroup(input_layer_ID, EXCITATORY_NEURONS[0], INPUT_SYN_PARAMS);
+	//BenchModel->AddSynapseGroup(input_layer_ID, EXCITATORY_NEURONS[0], INPUT_SYN_PARAMS);
 
 
 	/*
@@ -197,7 +198,9 @@ int main (int argc, char *argv[]){
 
 
 	Simulator * simulator = new Simulator(BenchModel, simoptions);
+	clock_t starttime = clock();
 	simulator->RunSimulation();
+	clock_t totaltime = clock() - starttime;
 	//cudaProfilerStop();
 	return(0);
 }

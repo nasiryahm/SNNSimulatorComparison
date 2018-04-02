@@ -40,6 +40,9 @@
  * */
 
 #include "auryn.h"
+#include <fstream>
+#include <time.h>       /* clock_t, clock, CLOCKS_PER_SEC */
+#include <iomanip>      // std::setprecision
 
 using namespace auryn;
 
@@ -194,10 +197,19 @@ int main(int ac,char *av[]) {
 
 
 	// RateChecker * chk = new RateChecker( neurons_e , -0.1 , 1000. , 100e-3);
-
+	
 	logger->msg("Simulating ..." ,PROGRESS,true);
+	clock_t starttime = clock();
 	if (!sys->run(simtime,true)) 
 			errcode = 1;
+	clock_t totaltime = clock() - starttime;
+
+	if ( fast ){
+		std::ofstream timefile;
+		timefile.open("timefile.dat");
+		timefile << std::setprecision(10) << ((float)totaltime / CLOCKS_PER_SEC);
+		timefile.close();
+	}
 
 	if ( sys->mpi_rank() == 0 ) {
 		logger->msg("Saving elapsed time ..." ,PROGRESS,true);
