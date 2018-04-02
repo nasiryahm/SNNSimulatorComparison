@@ -28,6 +28,7 @@
 #include <math.h>
 #include <getopt.h>
 #include <time.h>
+#include <iomanip>
 
 int main (int argc, char *argv[]){
 	// Getting options:
@@ -110,10 +111,10 @@ int main (int argc, char *argv[]){
 	// Setting the dimensions of the input neuron layer
 	input_neuron_params->group_shape[0] = 1;		// x-dimension of the input neuron layer
 	input_neuron_params->group_shape[1] = 20;		// y-dimension of the input neuron layer
-	input_neuron_params->rate = 10.0f; // Hz
+	input_neuron_params->rate = 0.0f; // Hz
 	// Create a group of input neurons. This function returns the ID of the input neuron group
-	int input_layer_ID = BenchModel->AddInputNeuronGroup(input_neuron_params);
-	poisson_input_spiking_neurons->set_up_rates();
+	//int input_layer_ID = BenchModel->AddInputNeuronGroup(input_neuron_params);
+	//poisson_input_spiking_neurons->set_up_rates();
 	
 	/*
 		Setting up NEURON POPULATION
@@ -201,6 +202,12 @@ int main (int argc, char *argv[]){
 	clock_t starttime = clock();
 	simulator->RunSimulation();
 	clock_t totaltime = clock() - starttime;
+	if ( fast ){
+		std::ofstream timefile;
+		timefile.open("timefile.dat");
+		timefile << std::setprecision(10) << ((float)totaltime / CLOCKS_PER_SEC);
+		timefile.close();
+	}
 	//cudaProfilerStop();
 	return(0);
 }

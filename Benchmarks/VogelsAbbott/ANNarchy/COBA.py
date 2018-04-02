@@ -1,7 +1,7 @@
 import getopt, sys
 import time
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], '', ['fast', 'simtime='])
+    optlist, args = getopt.getopt(sys.argv[1:], '', ['fast', 'simtime=', 'num_timesteps_delay='])
 except getopt.GetoptError as err:
     print(str(err))
     usage()
@@ -9,6 +9,7 @@ except getopt.GetoptError as err:
 
 simtime = 1.0
 fast = False
+num_timesteps_delay = 1
 for o, a in optlist:
     if (o == "--fast"):
         fast = True
@@ -16,10 +17,14 @@ for o, a in optlist:
     elif (o == "--simtime"):
         simtime=float(a)
         print("Simulation Time: " + a)
+    elif (o == "--num_timesteps_delay"):
+        num_timesteps_delay=int(a)
+        print("Delay (in number of timesteps): " + a)
 
 
 from ANNarchy import *
-setup(dt=0.1)
+timestep = 0.1 # in ms
+setup(dt=timestep)
 # ###########################################
 # Neuron model
 # ###########################################
@@ -52,17 +57,18 @@ COBA = Neuron(
 P = Population(geometry=4000, neuron=COBA)
 Pe = P[:3200]
 Pi = P[3200:]
-P.v = Normal(-55.0, 5.0)
-P.g_exc = Normal(4.0, 1.5)
-P.g_inh = Normal(20.0, 12.0)
+P.v = -55.0#Normal(-55.0, 5.0)
+P.g_exc = 0.0#Normal(4.0, 1.5)
+P.g_inh = 0.0#Normal(20.0, 12.0)
 
 # ###########################################
 # Connect the network
 # ###########################################
+gleak = 1.0; #1000.0 * (500.0*pow(10.0, -12.0) / 0.02)
 Ce = Projection(pre=Pe, post=P, target='exc')
-Ce.connect_fixed_probability(weights=0.6, probability=0.02)
+Ce.connect_fixed_probability(weights=0.4*gleak, probability=0.02, delays=num_timesteps_delay*timestep)
 Ci = Projection(pre=Pi, post=P, target='inh')
-Ci.connect_fixed_probability(weights=6.7, probability=0.02)
+Ci.connect_fixed_probability(weights=5.1*gleak, probability=0.02, delays=num_timesteps_delay*timestep)
 
 compile()
 
@@ -85,7 +91,7 @@ else:
     # Make plots
     # ###########################################
     t, n = m.raster_plot(data)
-    print('Mean firing rate in the population: ' + str(len(t) / 4000.) + 'Hz')
+    print('Mean firing rate in the population: ' + str(len(t) / (simtime*4000.)) + 'Hz')
 
 #import matplotlib.pyplot as plt
 #plt.plot(t, n, '.', markersize=0.5)
