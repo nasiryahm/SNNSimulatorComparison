@@ -73,7 +73,8 @@ int main(int ac,char *av[]) {
 
 	bool fast = false;
 
-	int num_timesteps_delay = 1;
+	int num_timesteps_min_delay = 1;
+	int num_timesteps_max_delay = 1;
 
 	int errcode = 0;
 
@@ -84,7 +85,8 @@ int main(int ac,char *av[]) {
         desc.add_options()
             ("help", "produce help message")
             ("simtime", po::value<double>(), "simulation time")
-            ("num_timesteps_delay", po::value<int>(), "the number of timesteps per delay")
+            ("num_timesteps_min_delay", po::value<int>(), "the number of timesteps per minimum delay")
+            ("num_timesteps_max_delay", po::value<int>(), "the number of timesteps per minimum delay")
             ("fast", "turns off most monitoring to reduce IO")
             ("dir", po::value<string>(), "load/save directory")
             ("fee", po::value<string>(), "file with EE connections")
@@ -106,8 +108,14 @@ int main(int ac,char *av[]) {
 			simtime = vm["simtime"].as<double>();
         } 
         
-	if (vm.count("num_timesteps_delay")) {
-			num_timesteps_delay = vm["num_timesteps_delay"].as<int>();
+	if (vm.count("num_timesteps_min_delay")) {
+			num_timesteps_min_delay = vm["num_timesteps_min_delay"].as<int>();
+			if (num_timesteps_max_delay < num_timesteps_min_delay)
+				num_timesteps_max_delay = num_timesteps_min_delay;
+        } 
+	
+	if (vm.count("num_timesteps_max_delay")) {
+			num_timesteps_min_delay = vm["num_timesteps_max_delay"].as<int>();
         } 
 
         if (vm.count("fast")) {
@@ -143,6 +151,11 @@ int main(int ac,char *av[]) {
         std::cerr << "Exception of unknown type!\n";
     }
 
+    if (num_timesteps_min_delay != num_timesteps_max_delay){
+    	std::cerr << "Error: Cannot use a range of delays with auryn."; 
+	return 1;
+    }
+
 
 	auryn_init( ac, av, dir );
 	oss << dir  << "/coba." << sys->mpi_rank() << ".";
@@ -155,8 +168,8 @@ int main(int ac,char *av[]) {
 	TIFGroup * neurons_e = new TIFGroup( ne);
 	TIFGroup * neurons_i = new TIFGroup( ni);
 	
-	neurons_e->set_delay(num_timesteps_delay);
-	neurons_i->set_delay(num_timesteps_delay);
+	neurons_e->set_delay(num_timesteps_min_delay);
+	neurons_i->set_delay(num_timesteps_min_delay);
 
 	neurons_e->set_refractory_period(5.0e-3); // minimal ISI 5.1ms
 	neurons_i->set_refractory_period(5.0e-3);
