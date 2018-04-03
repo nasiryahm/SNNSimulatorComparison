@@ -73,6 +73,8 @@ int main(int ac,char *av[]) {
 
 	bool fast = false;
 
+	int num_timesteps_delay = 1;
+
 	int errcode = 0;
 
 
@@ -82,6 +84,7 @@ int main(int ac,char *av[]) {
         desc.add_options()
             ("help", "produce help message")
             ("simtime", po::value<double>(), "simulation time")
+            ("num_timesteps_delay", po::value<int>(), "the number of timesteps per delay")
             ("fast", "turns off most monitoring to reduce IO")
             ("dir", po::value<string>(), "load/save directory")
             ("fee", po::value<string>(), "file with EE connections")
@@ -101,6 +104,10 @@ int main(int ac,char *av[]) {
 
         if (vm.count("simtime")) {
 			simtime = vm["simtime"].as<double>();
+        } 
+        
+	if (vm.count("num_timesteps_delay")) {
+			num_timesteps_delay = vm["num_timesteps_delay"].as<int>();
         } 
 
         if (vm.count("fast")) {
@@ -147,6 +154,9 @@ int main(int ac,char *av[]) {
 
 	TIFGroup * neurons_e = new TIFGroup( ne);
 	TIFGroup * neurons_i = new TIFGroup( ni);
+	
+	neurons_e->set_delay(num_timesteps_delay);
+	neurons_i->set_delay(num_timesteps_delay);
 
 	neurons_e->set_refractory_period(5.0e-3); // minimal ISI 5.1ms
 	neurons_i->set_refractory_period(5.0e-3);
@@ -197,6 +207,7 @@ int main(int ac,char *av[]) {
 
 
 	// RateChecker * chk = new RateChecker( neurons_e , -0.1 , 1000. , 100e-3);
+	//printf("Auryn timestep: %f", sys->auryn_timestep);
 	
 	logger->msg("Simulating ..." ,PROGRESS,true);
 	clock_t starttime = clock();
