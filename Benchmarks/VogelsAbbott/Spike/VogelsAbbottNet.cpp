@@ -34,12 +34,14 @@ int main (int argc, char *argv[]){
 	// Getting options:
 	float simtime = 20.0;
 	bool fast = false;
-	int num_timesteps_delay = 1;
+	int num_timesteps_min_delay = 1;
+	int num_timesteps_max_delay = 1;
 	const char* const short_opts = "";
 	const option long_opts[] = {
 		{"simtime", 1, nullptr, 0},
 		{"fast", 0, nullptr, 1},
-		{"num_timesteps_delay", 1, nullptr, 2}
+		{"num_timesteps_min_delay", 1, nullptr, 2},
+		{"num_timesteps_max_delay", 1, nullptr, 3}
 	};
 	// Check the set of options
 	while (true) {
@@ -59,7 +61,17 @@ int main (int argc, char *argv[]){
 				break;
 			case 2:
 				printf("Running with minimum delay: %s timesteps\n", optarg);
-				num_timesteps_delay = std::stoi(optarg);
+				num_timesteps_min_delay = std::stoi(optarg);
+				if (num_timesteps_max_delay < num_timesteps_min_delay)
+					num_timesteps_max_delay = num_timesteps_min_delay;
+				break;
+			case 3:
+				printf("Running with maximum delay: %s timesteps\n", optarg);
+				num_timesteps_max_delay = std::stoi(optarg);
+				if (num_timesteps_max_delay < num_timesteps_min_delay){
+					std::cerr << "ERROR: Max timestep shouldn't be smaller than min!" << endl;
+					exit(1);
+				}	
 				break;
 		}
 	};
@@ -69,7 +81,6 @@ int main (int argc, char *argv[]){
 	SpikingModel * BenchModel = new SpikingModel();
 	float timestep = 0.0001f; // 50us for now
 	BenchModel->SetTimestep(timestep);
-	float delayval = num_timesteps_delay*timestep;
 
 	// Create neuron, synapse and stdp types for this model
 	LIFSpikingNeurons * lif_spiking_neurons = new LIFSpikingNeurons();
@@ -136,12 +147,12 @@ int main (int argc, char *argv[]){
 	conductance_spiking_synapse_parameters_struct * INH_OUT_SYN_PARAMS = new conductance_spiking_synapse_parameters_struct();
 	conductance_spiking_synapse_parameters_struct * INPUT_SYN_PARAMS = new conductance_spiking_synapse_parameters_struct();
 	// Setting delays
-	EXC_OUT_SYN_PARAMS->delay_range[0] = delayval;
-	EXC_OUT_SYN_PARAMS->delay_range[1] = delayval;
-	INH_OUT_SYN_PARAMS->delay_range[0] = delayval;
-	INH_OUT_SYN_PARAMS->delay_range[1] = delayval;
-	INPUT_SYN_PARAMS->delay_range[0] = delayval;
-	INPUT_SYN_PARAMS->delay_range[1] = delayval;
+	EXC_OUT_SYN_PARAMS->delay_range[0] = num_timesteps_min_delay*timestep;
+	EXC_OUT_SYN_PARAMS->delay_range[1] = num_timesteps_max_delay*timestep;
+	INH_OUT_SYN_PARAMS->delay_range[0] = num_timesteps_min_delay*timestep;
+	INH_OUT_SYN_PARAMS->delay_range[1] = num_timesteps_max_delay*timestep;
+	INPUT_SYN_PARAMS->delay_range[0] = num_timesteps_min_delay*timestep;
+	INPUT_SYN_PARAMS->delay_range[1] = num_timesteps_max_delay*timestep;
 	// Setting Reversal Potentials for specific synapses (according to evans paper)
 	EXC_OUT_SYN_PARAMS->reversal_potential_Vhat = 0.0f*pow(10.0, -3);
 	INH_OUT_SYN_PARAMS->reversal_potential_Vhat = -80.0f*pow(10.0, -3);

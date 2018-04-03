@@ -19,4 +19,7 @@ The dependencies and packages required for the installation of these two package
 
 Brian with GeNN must be installed separately. If using conda, 'conda install -c brian-team brian2genn'. Otherwise, you must set the CUDA\_PATH and GENN\_PATH variables and add ${GENN\_PATH}/lib/bin to PATH. Following this, it can be installed as above with pip: 'pip instgall Simulators/brian2genn'
 
+## Testing ranges of delays:
+Spike, Brian2, and Nest support ranges of delays. ANNarchy informs us that it can handle uniform delays (experimentally) though does not compile in this case.
 
+Auryn and Brian2GeNN do not seem to support ranges of delays.
