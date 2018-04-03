@@ -1,17 +1,19 @@
 #!/bin/bash
 
-auryn=true
+auryn=false
 spike=false
-nest=false
+pyNest=true
 brian=false
 brian2genn=false
 ANNarchy=false
+
+options="--simtime 100 --fast"
 
 if [ "${auryn}" == true ] ; then
 	#### AURYN TEST
 	cd Benchmarks/VogelsAbbott/auryn
 	make all
-	time ./sim_coba_benchmark --simtime 100 --fast
+	./sim_coba_benchmark ${options}
 fi
 
 
@@ -22,12 +24,12 @@ if [ "${spike}" == true ] ; then
 	cd Build
 	cmake ../
 	make VogelsAbbottNet -j8
-	time ./VogelsAbbottNet --simtime 100
+	./VogelsAbbottNet ${options}
 fi
 
 
-if [ "${nest}" == true ] ; then
-	cd Benchmarks/VogelsAbbott/nest-simulator/
+if [ "${pyNest}" == true ] ; then
+	cd Benchmarks/VogelsAbbott/pyNest
 	mkdir -p Build
 	cd Build
 
@@ -36,21 +38,22 @@ if [ "${nest}" == true ] ; then
 	make install
 
 	cd ../
-	time Build/bin/nest coba.sli
+	source Build/bin/nest_vars.sh
+	python COBA.py ${options}
 fi
 
 
 if [ "${brian}" == true ] ; then
 	cd Benchmarks/VogelsAbbott/brian2
-	time python COBA.py --fast --simtime 100
+	python COBA.py ${options}
 fi
 
 if [ "${brian2genn}" == true ] ; then
 	cd Benchmarks/VogelsAbbott/brian2genn
-	time python COBA.py --fast --simtime 100
+	python COBA.py ${options}
 fi
 
 if [ "${ANNarchy}" == true ] ; then
 	cd Benchmarks/VogelsAbbott/ANNarchy
-	time python COBA.py --fast --simtime 100
+	python COBA.py ${options}
 fi
