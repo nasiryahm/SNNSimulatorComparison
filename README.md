@@ -11,6 +11,10 @@ Currently the simulators being compared are:
 - [Brian2 with GeNN (General Neural Network Simulator)](https://github.com/brian-team/brian2genn)
 
 ## Results
+Simulations were all single-threaded and run on machine with:
+CPU: Intel i7-4770K
+GPU: NVIDIA GTX 1070 founders edition
+
 Results of a simulation of the VogelsAbbott Benchmark with all synaptic delays set to 0.1ms
 ![0.1ms Delay Figure](Benchmarks/VogelsAbbott/_results/single_delay_comparison.png)
 
