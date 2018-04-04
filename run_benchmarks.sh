@@ -1,19 +1,21 @@
 #!/bin/bash
 
-auryn=false
-spike=false
+auryn=true
+spike=true
 pyNest=true
-brian=false
-brian2genn=false
-ANNarchy=false
+brian=true
+brian2genn=true
+ANNarchy=true
 
-options="--simtime 100 --fast"
+options="--simtime 100 --num_timesteps_min_delay 8 --fast"
 
+source deactivate
 if [ "${auryn}" == true ] ; then
 	#### AURYN TEST
 	cd Benchmarks/VogelsAbbott/auryn
 	make all
 	./sim_coba_benchmark ${options}
+	cd ../../../
 fi
 
 
@@ -25,6 +27,28 @@ if [ "${spike}" == true ] ; then
 	cmake ../
 	make VogelsAbbottNet -j8
 	./VogelsAbbottNet ${options}
+	cd ../../../../
+fi
+
+source activate simulatorcomparison
+if [ "${brian}" == true ] ; then
+	cd Benchmarks/VogelsAbbott/brian2
+	python COBA.py ${options}
+	cd ../../../
+fi
+
+
+if [ "${brian2genn}" == true ] ; then
+	cd Benchmarks/VogelsAbbott/brian2genn
+	python COBA.py ${options}
+	cd ../../../
+fi
+
+
+if [ "${ANNarchy}" == true ] ; then
+	cd Benchmarks/VogelsAbbott/ANNarchy
+	python COBA.py ${options}
+	cd ../../../
 fi
 
 
@@ -40,20 +64,7 @@ if [ "${pyNest}" == true ] ; then
 	cd ../
 	source Build/bin/nest_vars.sh
 	python COBA.py ${options}
+	cd ../../../
 fi
 
 
-if [ "${brian}" == true ] ; then
-	cd Benchmarks/VogelsAbbott/brian2
-	python COBA.py ${options}
-fi
-
-if [ "${brian2genn}" == true ] ; then
-	cd Benchmarks/VogelsAbbott/brian2genn
-	python COBA.py ${options}
-fi
-
-if [ "${ANNarchy}" == true ] ; then
-	cd Benchmarks/VogelsAbbott/ANNarchy
-	python COBA.py ${options}
-fi
