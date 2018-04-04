@@ -14,6 +14,9 @@ Currently the simulators being compared are:
 Simulations were all single-threaded and run on machine with:
 CPU: Intel i7-4770K
 GPU: NVIDIA GTX 1070 founders edition
+OS: Ubuntu 16.04 LTS
+
+The installed python (conda) environment details are located in the conda\_req.txt file.
 
 Results of a simulation of the VogelsAbbott Benchmark with all synaptic delays set to 0.1ms
 ![0.1ms Delay Figure](Benchmarks/VogelsAbbott/_results/single_delay_comparison.png)
@@ -35,7 +38,7 @@ The dependencies and packages required for the installation of these two package
 Brian with GeNN must be installed separately. If using conda, 'conda install -c brian-team brian2genn'. Otherwise, you must set the CUDA\_PATH and GENN\_PATH variables and add ${GENN\_PATH}/lib/bin to PATH. Following this, it can be installed as above with pip: 'pip install Simulators/brian2genn'
 
 ## Running a speed test
-"run_benchmark.sh" is a bash script that outlines the simulation length and delay style to simulate in each simulator. Edit this to run a given style of benchmark (at the moment VogelsAbbott benchmark only). This will produce a timefile.dat file in each folder under "Benchmarks/VogelsAbbott/SIMULATOR". This timefile.dat contains a single ASCII float which is the time required to run the simulation (simulation run time only, not for the rest of the script). The "Benchmarks/VogelsAbbott/\_results" folder contains a plotting.py file with the matplotlib commands used to produce the results plots.
+"run\_benchmark.sh" is a bash script that outlines the simulation length and delay style to simulate in each simulator. Edit this to run a given style of benchmark (at the moment VogelsAbbott benchmark only). This will produce a timefile.dat file in each folder under "Benchmarks/VogelsAbbott/SIMULATOR". This timefile.dat contains a single ASCII float which is the time required to run the simulation (simulation run time only, not for the rest of the script). The "Benchmarks/VogelsAbbott/\_results" folder contains a plotting.py file with the matplotlib commands used to produce the results plots.
 
 ## Testing ranges of delays:
 Spike, Brian2, and Nest support ranges of delays. ANNarchy informs us that it can handle uniform delays (experimentally) though does not compile in this case.
