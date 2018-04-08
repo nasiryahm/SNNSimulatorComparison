@@ -42,7 +42,7 @@ dt = 0.1
 mindelay = dt*num_timesteps_min_delay
 maxdelay = dt*num_timesteps_max_delay
 J_E = 4.0
-J_I = 51.0
+J_I = -51.0
 
 nest.SetKernelStatus({"local_num_threads": 1, "resolution": dt, "overwrite_files": True})
 simtime=simtime*1000.0
@@ -134,5 +134,5 @@ if (fast):
 
 if (not fast):
     rate_iaf = nest.GetStatus(spikes)[0][
-                        "n_events"] / (simtime * N_rec)
+                        "n_events"] / ((simtime / 1000.0) * N_rec)
     print("Average Rate of recorded electrodes: " + str(rate_iaf) + "Hz")
