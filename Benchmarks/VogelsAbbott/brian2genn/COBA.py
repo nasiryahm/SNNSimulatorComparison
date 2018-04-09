@@ -90,10 +90,10 @@ conn_ii = Synapses(Pi,Pi,on_pre='g_gaba += wi', delay=num_timesteps_min_delay*de
 
 
 
-ee_mat = mmread('../pynn.ee.wmat')
-ei_mat = mmread('../pynn.ei.wmat')
-ie_mat = mmread('../pynn.ie.wmat')
-ii_mat = mmread('../pynn.ii.wmat')
+ee_mat = mmread('../ee.wmat')
+ei_mat = mmread('../ei.wmat')
+ie_mat = mmread('../ie.wmat')
+ii_mat = mmread('../ii.wmat')
 conn_ee.connect(i=ee_mat.row, j=ee_mat.col)
 conn_ei.connect(i=ei_mat.row, j=ei_mat.col)
 conn_ie.connect(i=ie_mat.row, j=ie_mat.col)

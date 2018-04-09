@@ -103,16 +103,16 @@ if (mindelay == maxdelay):
 #nest.Connect(nodes_I, nodes, syn_spec=inh_syn_dict, conn_spec=prob_conn_dict)
 
 conn_dict = {"rule": "one_to_one"}
-A = mmread('../pynn.ee.wmat')
+A = mmread('../ee.wmat')
 #rows, cols = A.nonzero()
 nest.Connect(pre=A.row+1, post=A.col+1, syn_spec=exc_syn_dict, conn_spec=conn_dict)
-A = mmread('../pynn.ei.wmat')
+A = mmread('../ei.wmat')
 #rows, cols = A.nonzero()
 nest.Connect(A.row+1, A.col+NE+1, syn_spec=exc_syn_dict, conn_spec=conn_dict)
-A = mmread('../pynn.ie.wmat')
+A = mmread('../ie.wmat')
 #rows, cols = A.nonzero()
 nest.Connect(A.row+NE+1, A.col+1, syn_spec=inh_syn_dict, conn_spec=conn_dict)
-A = mmread('../pynn.ii.wmat')
+A = mmread('../ii.wmat')
 #rows, cols = A.nonzero()
 nest.Connect(A.row+NE+1, A.col+NE+1, syn_spec=inh_syn_dict, conn_spec=conn_dict)
 

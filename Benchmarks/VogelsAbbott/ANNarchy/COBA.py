@@ -80,20 +80,20 @@ if (num_timesteps_min_delay != num_timesteps_max_delay):
 
 
 
-A = mmread('../pynn.ee.wmat')
+A = mmread('../ee.wmat')
 Cee = Projection(pre=Pe, post=Pe, target='exc')
 Cee.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
 
-A = mmread('../pynn.ei.wmat')
+A = mmread('../ei.wmat')
 Cei = Projection(pre=Pe, post=Pi, target='exc')
 Cei.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
 
 
-A = mmread('../pynn.ie.wmat')
+A = mmread('../ie.wmat')
 Cie = Projection(pre=Pi, post=Pe, target='inh')
 Cie.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
 
-A = mmread('../pynn.ii.wmat')
+A = mmread('../ii.wmat')
 Cii = Projection(pre=Pi, post=Pi, target='inh')
 Cii.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
 

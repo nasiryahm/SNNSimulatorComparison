@@ -51,10 +51,10 @@ namespace po = boost::program_options;
 int main(int ac,char *av[]) {
 	string dir = "/tmp";
 
-	string fwmat_ee = "";
-	string fwmat_ei = "";
-	string fwmat_ie = "";
-	string fwmat_ii = "";
+	string fwmat_ee = "../ee.wmat";
+	string fwmat_ei = "../ei.wmat";
+	string fwmat_ie = "../ie.wmat";
+	string fwmat_ii = "../ii.wmat";
 
 	std::stringstream oss;
 	string strbuf ;
@@ -195,6 +195,7 @@ int main(int ac,char *av[]) {
 	SparseConnection * con_ii 
 		= new SparseConnection( neurons_i,neurons_i,wi,sparseness,GABA);
 
+	if ( !fwmat_ee.empty() ) std::cout << "Loading connectivity from file." << std::endl;
 	if ( !fwmat_ee.empty() ) con_ee->load_from_complete_file(fwmat_ee);
 	if ( !fwmat_ei.empty() ) con_ei->load_from_complete_file(fwmat_ei);
 	if ( !fwmat_ie.empty() ) con_ie->load_from_complete_file(fwmat_ie);

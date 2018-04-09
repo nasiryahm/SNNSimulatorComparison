@@ -29,7 +29,47 @@
 #include <getopt.h>
 #include <time.h>
 #include <iomanip>
+#include <vector>
 
+void connect_from_mat(
+		int layer1,
+		int layer2,
+		conductance_spiking_synapse_parameters_struct* SYN_PARAMS, 
+		std::string filename,
+		SpikingModel* Model){
+
+	ifstream weightfile;
+	string line;
+	stringstream ss;
+	std::vector<int> prevec, postvec;
+	int pre, post;
+	float weight;
+	int linecount = 0;
+	weightfile.open(filename.c_str());
+
+	if (weightfile.is_open()){
+		printf("Loading weights from mat file: %s\n", filename.c_str());
+		while (getline(weightfile, line)){
+			if (line.c_str()[0] == '%'){
+				continue;
+			} else {
+				linecount++;
+				if (linecount == 1) continue;
+				//printf("%s\n", line.c_str());
+				ss.clear();
+				ss << line;
+				ss >> pre >> post >> weight;
+				prevec.push_back(pre);
+				postvec.push_back(post);
+				//printf("%d, %d\n", pre, post);
+			}
+		}
+		SYN_PARAMS->pairwise_connect_presynaptic = prevec;
+		SYN_PARAMS->pairwise_connect_postsynaptic = postvec;
+		SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE;
+		Model->AddSynapseGroup(layer1, layer2, SYN_PARAMS);
+	}
+}
 int main (int argc, char *argv[]){
 	// Getting options:
 	float simtime = 20.0;
@@ -174,6 +214,7 @@ int main (int argc, char *argv[]){
 	INH_OUT_SYN_PARAMS->biological_conductance_scaling_constant_lambda = 10.0f*pow(10.0,-9);
 	INPUT_SYN_PARAMS->biological_conductance_scaling_constant_lambda = 10.0f*pow(10.0,-9);
 
+	/*
 	// Creating Synapse Populations
 	EXC_OUT_SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_RANDOM;
 	INH_OUT_SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_RANDOM;
@@ -191,6 +232,33 @@ int main (int argc, char *argv[]){
 	BenchModel->AddSynapseGroup(INHIBITORY_NEURONS[0], EXCITATORY_NEURONS[0], INH_OUT_SYN_PARAMS);
 	BenchModel->AddSynapseGroup(INHIBITORY_NEURONS[0], INHIBITORY_NEURONS[0], INH_OUT_SYN_PARAMS);
 	//BenchModel->AddSynapseGroup(input_layer_ID, EXCITATORY_NEURONS[0], INPUT_SYN_PARAMS);
+	*/
+	EXC_OUT_SYN_PARAMS->plasticity_vec.push_back(nullptr);
+	INH_OUT_SYN_PARAMS->plasticity_vec.push_back(nullptr);
+
+	connect_from_mat(
+		EXCITATORY_NEURONS[0], EXCITATORY_NEURONS[0],
+		EXC_OUT_SYN_PARAMS, 
+		"../../ee.wmat",
+		BenchModel);
+	connect_from_mat(
+		EXCITATORY_NEURONS[0], INHIBITORY_NEURONS[0],
+		EXC_OUT_SYN_PARAMS, 
+		"../../ei.wmat",
+		BenchModel);
+	connect_from_mat(
+		INHIBITORY_NEURONS[0], EXCITATORY_NEURONS[0],
+		INH_OUT_SYN_PARAMS, 
+		"../../ie.wmat",
+		BenchModel);
+	connect_from_mat(
+		INHIBITORY_NEURONS[0], INHIBITORY_NEURONS[0],
+		INH_OUT_SYN_PARAMS, 
+		"../../ii.wmat",
+		BenchModel);
+
+
+	// Adding connections based upon matrices given
 
 
 	/*
@@ -204,6 +272,7 @@ int main (int argc, char *argv[]){
 	simoptions->run_simulation_general_options->presentation_time_per_stimulus_per_epoch = simtime;
 	if (!fast){
 		simoptions->recording_electrodes_options->collect_neuron_spikes_recording_electrodes_bool = true;
+		simoptions->file_storage_options->save_recorded_neuron_spikes_to_file = true;
 		//simoptions->recording_electrodes_options->collect_neuron_spikes_optional_parameters->human_readable_storage = true;
 		simoptions->recording_electrodes_options->collect_input_neuron_spikes_recording_electrodes_bool = true;
 	}
