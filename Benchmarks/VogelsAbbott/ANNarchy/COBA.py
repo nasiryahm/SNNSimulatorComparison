@@ -30,6 +30,7 @@ for o, a in optlist:
 
 
 from ANNarchy import *
+from scipy.io import mmread
 timestep = 0.1 # in ms
 setup(dt=timestep)
 # ###########################################
@@ -72,16 +73,30 @@ P.g_inh = 0.0#Normal(20.0, 12.0)
 # Connect the network
 # ###########################################
 gleak = 1.0; #1000.0 * (500.0*pow(10.0, -12.0) / 0.02)
+
+delayval = num_timesteps_min_delay*timestep
 if (num_timesteps_min_delay != num_timesteps_max_delay):
-    Ce = Projection(pre=Pe, post=P, target='exc')
-    Ce.connect_fixed_probability(weights=0.4*gleak, probability=0.02, delays=Uniform(num_timesteps_min_delay*timestep, num_timesteps_max_delay*timestep))
-    Ci = Projection(pre=Pi, post=P, target='inh')
-    Ci.connect_fixed_probability(weights=5.1*gleak, probability=0.02, delays=Uniform(num_timesteps_min_delay*timestep, num_timesteps_max_delay*timestep))
-else:
-    Ce = Projection(pre=Pe, post=P, target='exc')
-    Ce.connect_fixed_probability(weights=0.4*gleak, probability=0.02, delays=num_timesteps_min_delay*timestep)
-    Ci = Projection(pre=Pi, post=P, target='inh')
-    Ci.connect_fixed_probability(weights=5.1*gleak, probability=0.02, delays=num_timesteps_min_delay*timestep)
+    delayval = Uniform(num_timesteps_min_delay*timestep, num_timesteps_max_delay*timestep)
+
+
+
+A = mmread('../pynn.ee.wmat')
+Cee = Projection(pre=Pe, post=Pe, target='exc')
+Cee.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
+
+A = mmread('../pynn.ei.wmat')
+Cei = Projection(pre=Pe, post=Pi, target='exc')
+Cei.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
+
+
+A = mmread('../pynn.ie.wmat')
+Cie = Projection(pre=Pi, post=Pe, target='inh')
+Cie.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
+
+A = mmread('../pynn.ii.wmat')
+Cii = Projection(pre=Pi, post=Pi, target='inh')
+Cii.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
+
 
 compile()
 

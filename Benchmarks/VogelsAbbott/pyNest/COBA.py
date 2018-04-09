@@ -96,25 +96,25 @@ if (mindelay == maxdelay):
     exc_syn_dict.update({"delay": mindelay})
     inh_syn_dict.update({"delay": mindelay})
     
-prob_conn_dict = {"rule": "pairwise_bernoulli", "p": p}
 
-nest.Connect(nodes_E, nodes, syn_spec=exc_syn_dict, conn_spec=prob_conn_dict)
-nest.Connect(nodes_I, nodes, syn_spec=inh_syn_dict, conn_spec=prob_conn_dict)
-'''
+#prob_conn_dict = {"rule": "pairwise_bernoulli", "p": p}
+
+#nest.Connect(nodes_E, nodes, syn_spec=exc_syn_dict, conn_spec=prob_conn_dict)
+#nest.Connect(nodes_I, nodes, syn_spec=inh_syn_dict, conn_spec=prob_conn_dict)
+
+conn_dict = {"rule": "one_to_one"}
 A = mmread('../pynn.ee.wmat')
-rows, cols = A.nonzero()
-nest.Connect(rows+1, cols+1, syn_spec=exc_syn_dict)
+#rows, cols = A.nonzero()
+nest.Connect(pre=A.row+1, post=A.col+1, syn_spec=exc_syn_dict, conn_spec=conn_dict)
 A = mmread('../pynn.ei.wmat')
-rows, cols = A.nonzero()
-nest.Connect(rows+1, cols+N_E+1, syn_spec=exc_syn_dict)
+#rows, cols = A.nonzero()
+nest.Connect(A.row+1, A.col+NE+1, syn_spec=exc_syn_dict, conn_spec=conn_dict)
 A = mmread('../pynn.ie.wmat')
-rows, cols = A.nonzero()
-nest.Connect(rows+N_E+1, cols+1, syn_spec=inh_syn_dict)
+#rows, cols = A.nonzero()
+nest.Connect(A.row+NE+1, A.col+1, syn_spec=inh_syn_dict, conn_spec=conn_dict)
 A = mmread('../pynn.ii.wmat')
-rows, cols = A.nonzero()
-nest.Connect(rows+N_E+1, cols+N_E+1, syn_spec=inh_syn_dict)
-'''
-
+#rows, cols = A.nonzero()
+nest.Connect(A.row+NE+1, A.col+NE+1, syn_spec=inh_syn_dict, conn_spec=conn_dict)
 
 if (not fast):
     spikes = nest.Create("spike_detector", 1, 
