@@ -114,6 +114,13 @@ else:
     m = Monitor(P, ['spike'])
     simulate(simtime*1000.0, measure_time=True)
     data = m.get('spike')
+    # Outputting spikes
+    with open("./spikes.out", "w") as f:
+        for n in range(3200):
+            d = data[n]
+            for spiketime in d:
+                f.write(str(n) + "\t" + str(spiketime) + "\n")
+
 
     # ###########################################
     # Make plots

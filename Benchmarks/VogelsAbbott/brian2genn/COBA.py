@@ -56,13 +56,12 @@ defaultclock.dt = timestep*ms
 NE = 3200
 NI = NE/4
 
-scale = 1
-we = scale*0.4*nS
-wi = scale*5.1*nS
+gl = 10.0*nS
+we = 0.4*gl
+wi = 5.1*gl
 tau_ampa  = 5.0*ms
 tau_gaba = 10.0*ms
 
-gl = 10.0*nS
 el = -60.*mV
 er = -80.*mV
 vt = -50.*mV
@@ -127,6 +126,13 @@ else:
     totaltime = timeit.default_timer() - starttime
     print("Mean Network Firing Rate: " + str(len(s_mon.i) / (4000.0*simtime)) + "Hz")
     print("Real Time Sim: " + str(totaltime) + "s")
-    #plot(s_mon.t/ms, s_mon.i, ',k')
+    indices = np.asarray(s_mon.i)
+    times = np.asarray(s_mon.t)
+    
+    # Writing out spikes
+    with open("spikes.out", "w") as f:
+        for index in range(len(indices)):
+            f.write(str(indices[index]) + "\t" + str(times[index]) + "\n")
+   #plot(s_mon.t/ms, s_mon.i, ',k')
     #xlabel('Time (ms)')
 print("Complete.")

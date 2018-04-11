@@ -1,6 +1,8 @@
 # SNNSimulatorComparison
 Comparison of Spiking Neural Network Simulator Performance
 
+__Note: Tests are still being conducted on the benchmark model for each simulator and the results may change as the models are corrected__
+
 Simulators are included as git submodules.
 Currently the simulators being compared are:
 - [NEST Simulator (using pyNEST)](https://github.com/nest/nest-simulator/)
