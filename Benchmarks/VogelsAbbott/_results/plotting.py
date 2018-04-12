@@ -11,7 +11,7 @@ simulators = [
         ]
 
 single_timestep_delay_results = []
-singlefoldername = "timestep_single_delay/"
+singlefoldername = "timestep_1_delay/"
 
 eight_timestep_delay_results = []
 eightfoldername = "timestep_8_delay/"
