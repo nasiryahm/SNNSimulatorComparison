@@ -59,8 +59,8 @@ void connect_from_mat(
 				ss.clear();
 				ss << line;
 				ss >> pre >> post >> weight;
-				prevec.push_back(pre);
-				postvec.push_back(post);
+				prevec.push_back(pre - 1);
+				postvec.push_back(post - 1);
 				//printf("%d, %d\n", pre, post);
 			}
 		}
