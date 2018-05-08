@@ -149,7 +149,7 @@ int main (int argc, char *argv[]){
 	INPUT_SYN_PARAMS->delay_range[0] = num_timesteps_min_delay*timestep;
 	INPUT_SYN_PARAMS->delay_range[1] = num_timesteps_max_delay*timestep;
 	// Set Weight Range (in mVs)
-  float weight_multiplier = 0.02*pow(10.0, -3);
+  float weight_multiplier = pow(10.0, -3);
   float weight_val = 0.1f;
   float gamma = 5.0f;
 	EXC_OUT_SYN_PARAMS->weight_range_bottom = weight_val * weight_multiplier;
