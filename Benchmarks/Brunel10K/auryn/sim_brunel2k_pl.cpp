@@ -64,7 +64,7 @@ int main(int ac,char *av[]) {
 	// avoid frequency changes during the simulation. Otherwise
 	// lambda should be in the order of 1e-2 - 1e-3.
 	double gamma = 5.0;
-	double poisson_rate = 40.0e3;
+	double poisson_rate = 20.0e3;
 
 	string load = "";
 	string save = "";
@@ -73,6 +73,9 @@ int main(int ac,char *av[]) {
 	string fwmat_ei = "";
 	string fwmat_ie = "";
 	string fwmat_ii = "";
+	
+	bool fast = false;
+	int num_timesteps_min_delay = 1;
 
 	int errcode = 0;
 
@@ -84,6 +87,8 @@ int main(int ac,char *av[]) {
         desc.add_options()
             ("help", "produce help message")
             ("simtime", po::value<double>(), "duration of simulation")
+            ("num_timesteps_min_delay", po::value<int>(), "the number of timesteps per minimum delay")
+            ("fast", "turns off most monitoring to reduce IO")
             ("gamma", po::value<double>(), "gamma factor for inhibitory weight")
             ("lambda", po::value<double>(), "learning rate")
             ("nu", po::value<double>(), "the external firing rate nu")
@@ -148,6 +153,12 @@ int main(int ac,char *av[]) {
         if (vm.count("fii")) {
 			fwmat_ii = vm["fii"].as<string>();
         } 
+        if (vm.count("num_timesteps_min_delay")) {
+          num_timesteps_min_delay = vm["num_timesteps_min_delay"].as<int>();
+        } 
+        if (vm.count("fast")) {
+          fast = true;
+        } 
     }
     catch(std::exception& e) {
         std::cerr << "error: " << e.what() << "\n";
@@ -160,6 +171,7 @@ int main(int ac,char *av[]) {
 	auryn_init(ac, av);
 	oss << dir  << "/brunel." << sys->mpi_rank() << ".";
 	string outputfile = oss.str();
+	if ( fast ) sys->quiet = true;
 
 	logger->msg("Setting up neuron groups ...",PROGRESS,true);
 	IafPscDeltaGroup * neurons_e = new IafPscDeltaGroup( ne );
@@ -206,7 +218,6 @@ int main(int ac,char *av[]) {
 	
 
     logger->msg("Setting up E connections ...",PROGRESS,true);
-    /*
 	STDPwdConnection * con_ee 
 		= new STDPwdConnection( 
 				neurons_e,
@@ -219,9 +230,10 @@ int main(int ac,char *av[]) {
 	con_ee->set_max_weight(3*w);
 	con_ee->set_alpha(2.02);
 	con_ee->set_lambda(lambda); 
-  */
+  /*
 	SparseConnection * con_ee
 		= new SparseConnection( neurons_e,neurons_e,w,sparseness,MEM);
+    */
 
 	SparseConnection * con_ei 
 		= new SparseConnection( neurons_e,neurons_i,w,sparseness,MEM);
@@ -232,17 +244,21 @@ int main(int ac,char *av[]) {
 	SparseConnection * con_ie 
 		= new SparseConnection( neurons_i,neurons_e,-gamma*w,sparseness,MEM);
 
-	msg = "Setting up monitors ...";
-	logger->msg(msg,PROGRESS,true);
+	if ( !fast ) {
+		logger->msg("Use --fast option to turn off IO for benchmarking!", WARNING);
+	  msg = "Setting up monitors ...";
+	  logger->msg(msg,PROGRESS,true);
 
-	std::stringstream filename;
-	filename << outputfile << "e.ras";
-	SpikeMonitor * smon_e = new SpikeMonitor( neurons_e, filename.str().c_str(), nrec);
+	  std::stringstream filename;
+	  filename << outputfile << "e.ras";
+	  SpikeMonitor * smon_e = new SpikeMonitor( neurons_e, filename.str().c_str(), nrec);
 
-	filename.str("");
-	filename.clear();
-	filename << outputfile << "i.ras";
-	SpikeMonitor * smon_i = new SpikeMonitor( neurons_i, filename.str().c_str(), nrec);
+	  filename.str("");
+	  filename.clear();
+	  filename << outputfile << "i.ras";
+	  SpikeMonitor * smon_i = new SpikeMonitor( neurons_i, filename.str().c_str(), nrec);
+	  RateChecker * chk = new RateChecker( neurons_e , 0.1 , 1000. , 100e-3);
+  }
 
 	// filename.str("");
 	// filename.clear();
@@ -255,7 +271,6 @@ int main(int ac,char *av[]) {
 	// filename << outputfile << "mem";
 	// StateMonitor * smon = new StateMonitor( neurons_e, 13, "mem", filename.str() );
 
-	RateChecker * chk = new RateChecker( neurons_e , 0.1 , 1000. , 100e-3);
 
 	if ( !load.empty() ) {
 		sys->load_network_state(load);
@@ -278,10 +293,21 @@ int main(int ac,char *av[]) {
 	con_ii->sanity_check();
 
 	logger->msg("Simulating ..." ,PROGRESS,true);
+	clock_t starttime = clock();
 	if (!sys->run(simtime,true)) 
 			errcode = 1;
+	clock_t totaltime = clock() - starttime;
 
-	if ( !save.empty() ) {
+  if ( fast ){
+		std::ofstream timefile;
+		timefile.open("timefile.dat");
+		timefile << std::setprecision(10) << ((float)totaltime / CLOCKS_PER_SEC);
+		timefile.close();
+	}
+
+
+
+	if ( !save.empty() & !fast ) {
 		sys->save_network_state(save);
 	}
 
@@ -292,5 +318,6 @@ int main(int ac,char *av[]) {
 
 	logger->msg("Freeing ..." ,PROGRESS,true);
 	auryn_free();
-	return errcode;
+	
+  return errcode;
 }

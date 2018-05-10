@@ -13,6 +13,3 @@
 [submodule "Simulators/ANNarchy"]
 	path = Simulators/ANNarchy
 	url = https://github.com/ANNarchy/ANNarchy.git
-[submodule "Simulators/brian2genn"]
-	path = Simulators/brian2genn
-	url = https://github.com/brian-team/brian2genn.git
