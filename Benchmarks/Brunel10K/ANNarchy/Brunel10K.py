@@ -29,15 +29,18 @@ for o, a in optlist:
         print("Maximum delay (in number of timesteps): " + a)
 
 from ANNarchy import *
-from time import time
 from pylab import *
 
 # ###########################################
 # Configuration
 # ###########################################
-setup(dt=0.1)
-record = True
-plot_all = True
+timestep_val = 0.1
+setup(dt=timestep_val)
+record = False
+plot_all = False
+if (not fast):
+    record = True
+    plot_all = True
 
 # ###########################################
 # Parameters
@@ -128,9 +131,21 @@ compile()
 # Simulation
 # ###########################################
 print 'Start simulation'
-if record:
+if record :
     m = Monitor(P[:Nrec], 'spike')
+
+
+if (fast):
+    starttime = time.clock()
+
 simulate(simtime*1000.0, measure_time=True)
+
+if (fast):
+    totaltime = time.clock() - starttime
+    f = open("timefile.dat", "w")
+    f.write("%f" % totaltime)
+    f.close()
+
 if record:
     data = m.get()
 
@@ -140,17 +155,4 @@ if record:
 if record:
     t, n = m.raster_plot(data['spike'])
     print 'Mean firing rate:', len(t)/(float(Nrec)*simtime), 'Hz'
-    if plot_all:
-        plot((t / 1000.0), n, '.')
-        show()
 
-# Histogram of the weights after learning
-if plot_all:
-    weights=[]
-    for i in xrange(Nrec):
-        ws = ee.dendrite(i).w
-        for w in ws:
-            weights.append(w)
-    hist(weights, bins=100)
-    xlabel('Synaptic weight [pA]')
-    show()
