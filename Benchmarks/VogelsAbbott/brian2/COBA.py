@@ -72,7 +72,7 @@ dg_gaba/dt = -g_gaba/tau_gaba : siemens
 '''
 
 P = NeuronGroup(NE+NI, model=eqs, threshold='v>vt', reset='v = el', refractory=5*ms, method='euler')
-P.v = er
+P.v = el
 P.g_ampa = 0.*nS
 P.g_gaba = 0.*nS
 Pe = P[:NE]
@@ -101,6 +101,7 @@ if (num_timesteps_min_delay != num_timesteps_max_delay):
     conn_ei.delay = delaysetup
     conn_ie.delay = delaysetup
     conn_ii.delay = delaysetup
+
 
 #conn_ei.connect(Pe, Pi, scale*array(mmread('../pynn.ei.wmat').todense(),dtype=float))
 #conn_ie.connect(Pi, Pe, scale*array(mmread('../pynn.ie.wmat').todense(),dtype=float))

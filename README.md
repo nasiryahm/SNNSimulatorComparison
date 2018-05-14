@@ -30,6 +30,8 @@ Results of a simulation of the VogelsAbbott Benchmark with ALL synaptic delays s
 
 A comparison of the ISI distributions, firing rasters, and firing rates is present in an [iPython notebook](Benchmarks/VogelsAbbott/_results/SimulatorComparisons.ipynb). These results were produced from files which are automatically dumped when the "--fast" option is not used in simulation execution.
 
+### Brunel 10,000 Neuron / 10^7 Synapse Plastic Network
+
 
 ## Getting all submodules:
 In order to clone this repository with all submodules:
@@ -44,7 +46,11 @@ ANNarchy and Brian can be installed using `pip install Simulators/ANNarchy/` and
 The dependencies and packages required for the installation of these two packages can be found in the requirements.txt file in the root of this repo.
 
 ## Running a speed test
-"run\_benchmark.sh" is a bash script that outlines the simulation length and delay style to simulate in each simulator. Edit this to run a given style of benchmark (at the moment VogelsAbbott benchmark only). This will produce a timefile.dat file in each folder under "Benchmarks/VogelsAbbott/SIMULATOR". This timefile.dat contains a single ASCII float which is the time required to run the simulation (simulation run time only, not for the rest of the script). The "Benchmarks/VogelsAbbott/\_results" folder contains a plotting.py file with the matplotlib commands used to produce the results plots.
+VogelsAbbotBenchmark.sh and Brunel10KBenchmark.sh are bash scripts that outlines the simulation length and delay style to simulate in each simulator.
+This will produce a timefile.dat file in each folder under "Benchmarks/BENCHMARK/SIMULATOR". This timefile.dat contains a single ASCII float which is the time required to run the simulation (simulation run time only, not for the rest of the script).
+The "Benchmarks/VogelsAbbott/\_results" folder contains a plotting.py file with the matplotlib commands used to produce the results plots.
+
+The benchmark bash scripts expect the existence of a conda environment (with packages listed in requirements.txt) of the name "simulatorcomparison".
 
 ## Testing ranges of delays:
 Spike, Brian2, and Nest support ranges of delays. ANNarchy informs us that it can handle uniform delays (experimentally) though does not compile in this case.

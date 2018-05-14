@@ -4,7 +4,6 @@ plt.style.use('ggplot')
 simulators = [
         "Spike",
         "auryn",
-        "brian2genn",
         "ANNarchy",
         "brian2",
         "Nest",
@@ -37,6 +36,7 @@ ax.bar(
         align='center', color='k')
 ax.set_xlabel("Simulator")
 ax.set_ylabel("Simulation Speed (Normalized)")
+ax.set_ylim([10.0**-2, 10.0**2])
 ax.set_yscale('log')
 fig.savefig('single_delay_comparison.png')
 #plt.show()
@@ -51,6 +51,7 @@ ax.bar(
         align='center', color='k')
 ax.set_xlabel("Simulator")
 ax.set_ylabel("Simulation Speed (Normalized)")
+ax.set_ylim([10.0**-2, 10.0**2])
 ax.set_yscale('log')
 fig.savefig('eight_delay_comparison.png')
 #plt.show()

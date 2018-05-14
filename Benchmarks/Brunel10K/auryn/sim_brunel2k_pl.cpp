@@ -156,7 +156,7 @@ int main(int ac,char *av[]) {
 			fwmat_ii = vm["fii"].as<string>();
         } 
         if (vm.count("num_timesteps_min_delay")) {
-          num_timesteps_min_delay = vm["num_timesteps_min_delay"].as<float>();
+          num_timesteps_min_delay = vm["num_timesteps_min_delay"].as<int>();
         } 
         if (vm.count("fast")) {
           fast = true;
