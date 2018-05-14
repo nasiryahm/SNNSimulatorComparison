@@ -1,15 +1,17 @@
 #!/bin/bash
 fast=false
-delay_in_timesteps=8
+delay_in_seconds=15
+simulation_length_in_seconds=100
+timestep=0.0001
 
 auryn=true
-spike=true
-pyNest=true
-brian=true
-ANNarchy=true
+spike=false
+pyNest=false
+brian2=false
+ANNarchy=false
 
-options="--simtime 100 --num_timesteps_min_delay ${delay_in_timesteps}"
-timingfolder="_results/timestep_${delay_in_timesteps}_delay/"
+options="--simtime ${simulation_length_in_seconds} --min_delay ${delay_in_seconds} --timestep ${timestep}"
+timingfolder="_results/timing/"
 if [ "${fast}" == true ] ; then
 	options="${options} --fast"
 fi
@@ -17,9 +19,9 @@ fi
 source deactivate
 if [ "${auryn}" == true ] ; then
 	#### AURYN TEST
-	cd Benchmarks/VogelsAbbott/auryn
+	cd Benchmarks/Brunel10K/auryn
 	make all
-	./sim_coba_benchmark ${options}
+	./sim_brunel2k_pl ${options}
 
 	if [ "${fast}" == true ] ; then
 		mkdir -p ../${timingfolder}
@@ -31,11 +33,11 @@ fi
 
 if [ "${spike}" == true ] ; then
 	#### SPIKE TEST
-	cd Benchmarks/VogelsAbbott/Spike
+	cd Benchmarks/Brunel10K/Spike
 	mkdir -p Build
 	cd Build
 	cmake ../
-	make VogelsAbbottNet -j8
+	make Brunel10K -j8
 	./VogelsAbbottNet ${options}
 	if [ "${fast}" == true ] ; then
 		mkdir -p ../../${timingfolder}
@@ -45,9 +47,9 @@ if [ "${spike}" == true ] ; then
 fi
 
 source activate simulatorcomparison
-if [ "${brian}" == true ] ; then
-	cd Benchmarks/VogelsAbbott/brian2
-	python COBA.py ${options}
+if [ "${brian2}" == true ] ; then
+	cd Benchmarks/Brunel10K/brian2
+	python Brunel10K.py ${options}
 	if [ "${fast}" == true ] ; then
 		mkdir -p ../${timingfolder}
 		cp ./timefile.dat ../${timingfolder}/brian2.dat
@@ -57,8 +59,8 @@ fi
 
 
 if [ "${ANNarchy}" == true ] ; then
-	cd Benchmarks/VogelsAbbott/ANNarchy
-	python COBA.py ${options}
+	cd Benchmarks/Brunel10K/ANNarchy
+	python Brunel10K.py ${options}
 	if [ "${fast}" == true ] ; then
 		mkdir -p ../${timingfolder}
 		cp ./timefile.dat ../${timingfolder}/ANNarchy.dat
@@ -68,7 +70,7 @@ fi
 
 
 if [ "${pyNest}" == true ] ; then
-	cd Benchmarks/VogelsAbbott/pyNest
+	cd Benchmarks/Brunel10K/pyNest
 	mkdir -p Build
 	cd Build
 
@@ -78,7 +80,7 @@ if [ "${pyNest}" == true ] ; then
 
 	cd ../
 	source Build/bin/nest_vars.sh
-	python COBA.py ${options}
+	python Brunel10K.py ${options}
 	if [ "${fast}" == true ] ; then
 		mkdir -p ../${timingfolder}
 		cp ./timefile.dat ../${timingfolder}/Nest.dat

@@ -75,6 +75,7 @@ int main(int ac,char *av[]) {
 	string fwmat_ii = "";
 	
 	bool fast = false;
+  bool plastic = false;
 	int num_timesteps_min_delay = 1;
 
 	int errcode = 0;
@@ -87,8 +88,9 @@ int main(int ac,char *av[]) {
         desc.add_options()
             ("help", "produce help message")
             ("simtime", po::value<double>(), "duration of simulation")
-            ("num_timesteps_min_delay", po::value<int>(), "the number of timesteps per minimum delay")
+            ("num_timesteps_min_delay", po::value<int>(), "minimum delay in seconds")
             ("fast", "turns off most monitoring to reduce IO")
+            ("plastic", "turns on STDP")
             ("gamma", po::value<double>(), "gamma factor for inhibitory weight")
             ("lambda", po::value<double>(), "learning rate")
             ("nu", po::value<double>(), "the external firing rate nu")
@@ -154,10 +156,13 @@ int main(int ac,char *av[]) {
 			fwmat_ii = vm["fii"].as<string>();
         } 
         if (vm.count("num_timesteps_min_delay")) {
-          num_timesteps_min_delay = vm["num_timesteps_min_delay"].as<int>();
+          num_timesteps_min_delay = vm["num_timesteps_min_delay"].as<float>();
         } 
         if (vm.count("fast")) {
           fast = true;
+        } 
+        if (vm.count("plastic")) {
+          plastic = true;
         } 
     }
     catch(std::exception& e) {
@@ -180,6 +185,7 @@ int main(int ac,char *av[]) {
 	neurons_e->e_rest = 0e-3;
 	neurons_e->e_reset = 0e-3;
 	neurons_e->thr = 20e-3;
+	neurons_e->set_delay(num_timesteps_min_delay);
 
 	IafPscDeltaGroup * neurons_i = new IafPscDeltaGroup( ni );
 	neurons_i->set_tau_mem(20.0e-3);
@@ -187,6 +193,7 @@ int main(int ac,char *av[]) {
 	neurons_i->e_rest = 0e-3;
 	neurons_i->e_reset = 0e-3;
 	neurons_i->thr = 20e-3;
+	neurons_e->set_delay(num_timesteps_min_delay);
 
 	logger->msg("Setting up Poisson input ...",PROGRESS,true);
 	// The traditional way to implement the network is with 
@@ -218,22 +225,30 @@ int main(int ac,char *av[]) {
 	
 
     logger->msg("Setting up E connections ...",PROGRESS,true);
-	STDPwdConnection * con_ee 
-		= new STDPwdConnection( 
+
+if (plastic){
+STDPwdConnection * con_ee_stdp;
+		con_ee_stdp  = new STDPwdConnection( 
 				neurons_e,
 				neurons_e,
 				w,
 				sparseness
 				);
-	con_ee->set_transmitter(MEM);
-	con_ee->set_name("E->E");
-	con_ee->set_max_weight(3*w);
-	con_ee->set_alpha(2.02);
-	con_ee->set_lambda(lambda); 
-  /*
-	SparseConnection * con_ee
-		= new SparseConnection( neurons_e,neurons_e,w,sparseness,MEM);
-    */
+	con_ee_stdp->set_transmitter(MEM);
+	con_ee_stdp->set_name("E->E");
+	con_ee_stdp->set_max_weight(3*w);
+	con_ee_stdp->set_alpha(2.02);
+	con_ee_stdp->set_lambda(lambda); 
+	con_ee_stdp->sanity_check();
+	if ( !fwmat_ee.empty() ) con_ee_stdp->load_from_complete_file(fwmat_ee);
+} else {
+  SparseConnection * con_ee;
+	con_ee = new SparseConnection( neurons_e,neurons_i,w,sparseness,MEM);
+	con_ee->sanity_check();
+	if ( !fwmat_ee.empty() ) con_ee->load_from_complete_file(fwmat_ee);
+
+}
+
 
 	SparseConnection * con_ei 
 		= new SparseConnection( neurons_e,neurons_i,w,sparseness,MEM);
@@ -276,7 +291,6 @@ int main(int ac,char *av[]) {
 		sys->load_network_state(load);
 	}
 
-	if ( !fwmat_ee.empty() ) con_ee->load_from_complete_file(fwmat_ee);
 	if ( !fwmat_ei.empty() ) con_ei->load_from_complete_file(fwmat_ei);
 	if ( !fwmat_ie.empty() ) con_ie->load_from_complete_file(fwmat_ie);
 	if ( !fwmat_ii.empty() ) con_ii->load_from_complete_file(fwmat_ii);
@@ -287,7 +301,6 @@ int main(int ac,char *av[]) {
 	// con_ii->prune();
 
 	// logger->msg("Running sanity check ...",PROGRESS,true);
-	con_ee->sanity_check();
 	con_ei->sanity_check();
 	con_ie->sanity_check();
 	con_ii->sanity_check();

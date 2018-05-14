@@ -1,12 +1,13 @@
 import getopt, sys, timeit
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], '', ['fast', 'simtime=', 'num_timesteps_min_delay=', 'num_timesteps_max_delay='])
+    optlist, args = getopt.getopt(sys.argv[1:], '', ['plastic', 'fast', 'simtime=', 'num_timesteps_min_delay=', 'num_timesteps_max_delay='])
 except getopt.GetoptError as err:
     print(str(err))
     sys.exit(2)
 
 simtime = 1.0
 fast = False
+plastic = False
 num_timesteps_min_delay = 1
 num_timesteps_max_delay = 1
 for o, a in optlist:
@@ -27,6 +28,9 @@ for o, a in optlist:
             print("ERROR: Max delay should not be smaller than min!")
             exit(1)
         print("Maximum delay (in number of timesteps): " + a)
+    elif (o == "--plastic"):
+        plastic = True
+        print("Running with plasticity on\n")
 
 from ANNarchy import *
 from pylab import *
@@ -116,7 +120,10 @@ noise = PoissonPopulation(geometry=10000, rates=20.0)
 # ###########################################
 # Projections
 # ###########################################
-ee = Projection(PE, PE, 'exc')
+if (plastic):
+    ee = Projection(PE, PE, 'exc', STDP)
+else:
+    ee = Projection(PE, PE, 'exc')
 ee.connect_fixed_number_pre(number=CE, weights=Uniform(0.5*JE, 1.5*JE), delays=delay)
 ei = Projection(PE, PI, 'exc')
 ei.connect_fixed_number_pre(number=CE, weights=Uniform(0.5*JE, 1.5*JE), delays=delay)
