@@ -78,7 +78,7 @@ IAF = Neuron(
         v += g_exc + g_inh - dt*v/tau_m
     """,
     spike="v > v_th",
-    reset="v = 0.0",
+    reset="v = 10.0",
     refractory=2.0
 )
 
@@ -99,11 +99,11 @@ STDP = Synapse(
     pre_spike="""
         g_target += w
         Apre += 1.0
-        w -= lbda * alpha * w * Apost : min=0.0
+        w -= lbda * alpha * (w/wmax) * Apost : min=0.0
     """,                  
     post_spike="""
         Apost += 1.0
-        w += lbda * (wmax - w) * Apre : max=wmax 
+        w += lbda * (1.0 - (w/wmax)) * Apre : max=wmax 
     """
 )
 
@@ -113,7 +113,7 @@ STDP = Synapse(
 P = Population(geometry=N, neuron=IAF)
 PE= P[:NE]
 PI= P[NE:]
-P.v = Uniform(-V_th, 0.95*V_th)
+P.v = 0.0#Uniform(-V_th, 0.95*V_th)
 
 noise = PoissonPopulation(geometry=10000, rates=20.0)
 
@@ -124,9 +124,9 @@ if (plastic):
     ee = Projection(PE, PE, 'exc', STDP)
 else:
     ee = Projection(PE, PE, 'exc')
-ee.connect_fixed_number_pre(number=CE, weights=Uniform(0.5*JE, 1.5*JE), delays=delay)
+ee.connect_fixed_number_pre(number=CE, weights=JE, delays=delay)
 ei = Projection(PE, PI, 'exc')
-ei.connect_fixed_number_pre(number=CE, weights=Uniform(0.5*JE, 1.5*JE), delays=delay)
+ei.connect_fixed_number_pre(number=CE, weights=JE, delays=delay)
 ii = Projection(PI, P , 'inh')
 ii.connect_fixed_number_pre(number=CI, weights=JI, delays=delay)
 noisy = Projection(noise, P, 'exc')

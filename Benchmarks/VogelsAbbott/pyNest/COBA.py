@@ -65,7 +65,9 @@ else:
 '''
 
 
-neuron_params = { "E_L": -60.0,
+neuron_params = { 
+          "V_m": -60.0,
+          "E_L": -60.0,
           "V_th": -50.0,
           "V_reset": -60.0,
           "t_ref": 5.0,

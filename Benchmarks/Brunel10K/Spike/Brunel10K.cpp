@@ -13,6 +13,7 @@
 #include "Spike/Models/SpikingModel.hpp"
 #include "Spike/Simulator/Simulator.hpp"
 #include "Spike/Neurons/LIFSpikingNeurons.hpp"
+#include "Spike/Neurons/SpikingNeurons.hpp"
 #include "Spike/Neurons/PoissonInputSpikingNeurons.hpp"
 #include "Spike/Synapses/VoltageSpikingSynapses.hpp"
 #include "Spike/Plasticity/WeightDependentSTDPPlasticity.hpp"
@@ -26,6 +27,40 @@
 #include <time.h>
 #include <iomanip>
 #include <vector>
+#include <stdlib.h>
+
+void connect_with_sparsity(
+    int input_layer,
+    int output_layer,
+    spiking_neuron_parameters_struct* input_layer_params,
+    spiking_neuron_parameters_struct* output_layer_params,
+    voltage_spiking_synapse_parameters_struct* SYN_PARAMS,
+    float sparseness,
+    SpikingModel* Model
+    ){
+  // Change the connectivity type
+  int num_post_neurons = 
+    output_layer_params->group_shape[0]*output_layer_params->group_shape[1];
+  int num_pre_neurons = 
+    input_layer_params->group_shape[0]*input_layer_params->group_shape[1];
+  int num_syns_per_post = 
+    sparseness*num_pre_neurons;
+  
+  std::vector<int> prevec, postvec;
+  for (int outid = 0; outid < num_post_neurons; outid++){
+    for (int inid = 0; inid < num_syns_per_post; inid++){
+      postvec.push_back(outid);
+      prevec.push_back(rand() % num_pre_neurons);
+    }
+  }
+
+  SYN_PARAMS->pairwise_connect_presynaptic = prevec;
+  SYN_PARAMS->pairwise_connect_postsynaptic = postvec;
+  SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE;
+
+  Model->AddSynapseGroup(input_layer, output_layer, SYN_PARAMS);
+
+}
 
 int main (int argc, char *argv[]){
   // Getting options:
@@ -96,7 +131,7 @@ int main (int argc, char *argv[]){
   WDSTDP_PARAMS->a_minus = 1.0;
   WDSTDP_PARAMS->tau_plus = 0.02;
   WDSTDP_PARAMS->tau_minus = 0.02;
-  WDSTDP_PARAMS->lambda = 0.01;
+  WDSTDP_PARAMS->lambda = 1.0f*pow(10.0, -2);
   WDSTDP_PARAMS->alpha = 2.02;
   WDSTDP_PARAMS->w_max = 0.3;
   WeightDependentSTDPPlasticity * weightdependent_stdp = new WeightDependentSTDPPlasticity((SpikingSynapses *) voltage_spiking_synapses, (SpikingNeurons *)lif_spiking_neurons, (SpikingNeurons *) poisson_input_spiking_neurons, (stdp_plasticity_parameters_struct *) WDSTDP_PARAMS);
@@ -174,9 +209,8 @@ int main (int argc, char *argv[]){
   INPUT_SYN_PARAMS->delay_range[0] = num_timesteps_min_delay*timestep;
   INPUT_SYN_PARAMS->delay_range[1] = num_timesteps_max_delay*timestep;
   // Set Weight Range (in mVs)
-  float weight_val = 0.0f;
+  float weight_val = 0.1f;
   float gamma = 5.0f;
-  weight_val = 0.1f;
   EXC_OUT_SYN_PARAMS->weight_range_bottom = weight_val;
   EXC_OUT_SYN_PARAMS->weight_range_top = weight_val;
   INH_OUT_SYN_PARAMS->weight_range_bottom = -gamma * weight_val;
@@ -191,15 +225,57 @@ int main (int argc, char *argv[]){
   INPUT_SYN_PARAMS->biological_conductance_scaling_constant_lambda = weight_multiplier;
 
   // Creating Synapse Populations
-  EXC_OUT_SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_RANDOM;
-  INH_OUT_SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_RANDOM;
-  INPUT_SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_RANDOM;
-  //EXC_OUT_SYN_PARAMS->plasticity_vec.push_back(nullptr);
-  //INH_OUT_SYN_PARAMS->plasticity_vec.push_back(nullptr);
-  //INPUT_SYN_PARAMS->plasticity_vec.push_back(nullptr);
+  connect_with_sparsity(
+      EXCITATORY_NEURONS[0], INHIBITORY_NEURONS[0],
+      EXC_NEURON_PARAMS, INH_NEURON_PARAMS,
+      EXC_OUT_SYN_PARAMS, sparseness,
+      BenchModel);
+  if (plastic)
+    EXC_OUT_SYN_PARAMS->plasticity_vec.push_back(weightdependent_stdp);
+  connect_with_sparsity(
+      EXCITATORY_NEURONS[0], EXCITATORY_NEURONS[0],
+      EXC_NEURON_PARAMS, EXC_NEURON_PARAMS,
+      EXC_OUT_SYN_PARAMS, sparseness,
+      BenchModel);
+  connect_with_sparsity(
+      INHIBITORY_NEURONS[0], EXCITATORY_NEURONS[0],
+      INH_NEURON_PARAMS, EXC_NEURON_PARAMS,
+      INH_OUT_SYN_PARAMS, sparseness,
+      BenchModel);
+  connect_with_sparsity(
+      INHIBITORY_NEURONS[0], INHIBITORY_NEURONS[0],
+      INH_NEURON_PARAMS, INH_NEURON_PARAMS,
+      INH_OUT_SYN_PARAMS, sparseness,
+      BenchModel);
+  connect_with_sparsity(
+      input_layer_ID, EXCITATORY_NEURONS[0],
+      input_neuron_params, EXC_NEURON_PARAMS,
+      INPUT_SYN_PARAMS, sparseness,
+      BenchModel);
+  connect_with_sparsity(
+      input_layer_ID, INHIBITORY_NEURONS[0],
+      input_neuron_params, INH_NEURON_PARAMS,
+      INPUT_SYN_PARAMS, sparseness,
+      BenchModel);
+
+  /*
+  EXC_OUT_SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE
+  INH_OUT_SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE;
+  INPUT_SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE;
+  int num_e_syns = sparseness*EXC_NEURON_PARAMS->group_shape[1]*EXC_NEURON_PARAMS->group_shape[0];
+  int num_i_syns = sparseness*INH_NEURON_PARAMS->group_shape[1]*INH_NEURON_PARAMS->group_shape[0];
+  int num_in_syns = sparseness*input_neuron_params->group_shape[1]*input_neuron_params->group_shape[0];
+  std::vector<int> ee_preids, ee_postids;
+  std::vector<int> ei_preids, ei_postids;
+  std::vector<int> ie_preids, ie_postids;
+  std::vector<int> ii_preids, ii_postids;
+  std::vector<int> in_e_preids, in_e_postids;
+  std::vector<int> in_i_preids, in_i_postids;
+
   EXC_OUT_SYN_PARAMS->random_connectivity_probability = sparseness;
   INH_OUT_SYN_PARAMS->random_connectivity_probability = sparseness;
   INPUT_SYN_PARAMS->random_connectivity_probability = sparseness;
+
 
   // Connect all of the populations
   BenchModel->AddSynapseGroup(EXCITATORY_NEURONS[0], INHIBITORY_NEURONS[0], EXC_OUT_SYN_PARAMS);
@@ -210,6 +286,7 @@ int main (int argc, char *argv[]){
   BenchModel->AddSynapseGroup(INHIBITORY_NEURONS[0], INHIBITORY_NEURONS[0], INH_OUT_SYN_PARAMS);
   BenchModel->AddSynapseGroup(input_layer_ID, EXCITATORY_NEURONS[0], INPUT_SYN_PARAMS);
   BenchModel->AddSynapseGroup(input_layer_ID, INHIBITORY_NEURONS[0], INPUT_SYN_PARAMS);
+  */
 
   /*
     COMPLETE NETWORK SETUP

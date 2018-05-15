@@ -183,7 +183,7 @@ int main(int ac,char *av[]) {
 	neurons_e->set_tau_mem(20.0e-3);
 	neurons_e->set_tau_ref(2.0e-3);
 	neurons_e->e_rest = 0e-3;
-	neurons_e->e_reset = 0e-3;
+	neurons_e->e_reset = 10e-3;
 	neurons_e->thr = 20e-3;
 	neurons_e->set_delay(num_timesteps_min_delay);
 
@@ -227,7 +227,7 @@ int main(int ac,char *av[]) {
     logger->msg("Setting up E connections ...",PROGRESS,true);
 
 if (plastic){
-STDPwdConnection * con_ee_stdp;
+  STDPwdConnection * con_ee_stdp;
 		con_ee_stdp  = new STDPwdConnection( 
 				neurons_e,
 				neurons_e,
@@ -243,7 +243,7 @@ STDPwdConnection * con_ee_stdp;
 	if ( !fwmat_ee.empty() ) con_ee_stdp->load_from_complete_file(fwmat_ee);
 } else {
   SparseConnection * con_ee;
-	con_ee = new SparseConnection( neurons_e,neurons_i,w,sparseness,MEM);
+	con_ee = new SparseConnection( neurons_e,neurons_e,w,sparseness,MEM);
 	con_ee->sanity_check();
 	if ( !fwmat_ee.empty() ) con_ee->load_from_complete_file(fwmat_ee);
 
@@ -321,7 +321,7 @@ STDPwdConnection * con_ee_stdp;
 
 
 	if ( !save.empty() & !fast ) {
-		sys->save_network_state(save);
+		sys->save_network_state_text(save);
 	}
 
 

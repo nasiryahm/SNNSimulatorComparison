@@ -65,7 +65,7 @@ COBA = Neuron(
 P = Population(geometry=4000, neuron=COBA)
 Pe = P[:3200]
 Pi = P[3200:]
-P.v = -55.0#Normal(-55.0, 5.0)
+P.v = -60.0#Normal(-55.0, 5.0)
 P.g_exc = 0.0#Normal(4.0, 1.5)
 P.g_inh = 0.0#Normal(20.0, 12.0)
 

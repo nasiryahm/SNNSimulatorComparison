@@ -5,8 +5,8 @@ delay_in_timesteps=15 # Assuming 0.1ms timestep
 simulation_length_in_seconds=100
 
 auryn=false
-spike=false
-ANNarchy=true
+spike=true
+ANNarchy=false
 brian2=false
 pyNest=false
 
