@@ -13,6 +13,9 @@ Currently the simulators being compared are:
 
 ## Results
 ### Vogels Abbott Benchmark
+Source Paper:
+Vogels TP, Abbott LF. Signal propagation and logic gating in networks of integrate-and-fire neurons. J Neurosci. 2005;25: 10786–10795.
+
 Simulations were all single-threaded and run on machine with:
 CPU: Intel i7-4770K
 GPU: NVIDIA GTX 1070 founders edition
@@ -31,7 +34,13 @@ Results of a simulation of the VogelsAbbott Benchmark with ALL synaptic delays s
 A comparison of the ISI distributions, firing rasters, and firing rates is present in an [iPython notebook](Benchmarks/VogelsAbbott/_results/SimulatorComparisons.ipynb). These results were produced from files which are automatically dumped when the "--fast" option is not used in simulation execution.
 
 ### Brunel 10,000 Neuron / 10^7 Synapse Plastic Network
+Source Paper:
+Brunel N. Dynamics of sparsely connected networks of excitatory and inhibitory spiking neurons. J Comput Neurosci. 2000;8: 183–208.
 
+The model implemented is a specific version of this network as implemented by the auryn and ANNarchy networks (see repositories).
+
+Results of a simulation of the Brunel10K Benchmark with and without synaptic plasticity
+![Brunel10K Plasticity Benchmark](Benchmarks/Brunel10K/_results/speed_comparison.png)
 
 ## Getting all submodules:
 In order to clone this repository with all submodules:
