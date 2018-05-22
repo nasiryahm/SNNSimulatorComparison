@@ -44,7 +44,7 @@ ax.bar(
 ax.set_xticks(np.arange(len(simulators)))
 ax.set_xticklabels(simulators)
 ax.set_xlabel("Simulator")
-ax.set_ylabel("Simulation Speed (Normalized)")
+ax.set_ylabel("Simulation Run Time (Normalized)")
 #ax.set_yscale('log')
 ax.set_ylim([0, 100])
 ax.legend()

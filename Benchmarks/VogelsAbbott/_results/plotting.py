@@ -35,7 +35,7 @@ ax.bar(
         tick_label=simulators,
         align='center', color='k')
 ax.set_xlabel("Simulator")
-ax.set_ylabel("Simulation Speed (Normalized)")
+ax.set_ylabel("Simulation Run Time (Normalized)")
 ax.set_ylim([10.0**-2, 10.0**2])
 ax.set_yscale('log')
 fig.savefig('single_delay_comparison.png')
@@ -50,7 +50,7 @@ ax.bar(
         tick_label=simulators,
         align='center', color='k')
 ax.set_xlabel("Simulator")
-ax.set_ylabel("Simulation Speed (Normalized)")
+ax.set_ylabel("Simulation Run Time (Normalized)")
 ax.set_ylim([10.0**-2, 10.0**2])
 ax.set_yscale('log')
 fig.savefig('eight_delay_comparison.png')
