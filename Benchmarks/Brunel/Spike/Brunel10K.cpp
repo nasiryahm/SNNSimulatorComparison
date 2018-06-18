@@ -61,6 +61,45 @@ void connect_with_sparsity(
   Model->AddSynapseGroup(input_layer, output_layer, SYN_PARAMS);
 
 }
+void connect_from_mat(
+    int layer1,
+    int layer2,
+    spiking_synapse_parameters_struct* SYN_PARAMS, 
+    std::string filename,
+    SpikingModel* Model){
+
+  ifstream weightfile;
+  string line;
+  stringstream ss;
+  std::vector<int> prevec, postvec;
+  int pre, post;
+  float weight;
+  int linecount = 0;
+  weightfile.open(filename.c_str());
+
+  if (weightfile.is_open()){
+    printf("Loading weights from mat file: %s\n", filename.c_str());
+    while (getline(weightfile, line)){
+      if (line.c_str()[0] == '%'){
+        continue;
+      } else {
+        linecount++;
+        if (linecount == 1) continue;
+        //printf("%s\n", line.c_str());
+        ss.clear();
+        ss << line;
+        ss >> pre >> post >> weight;
+        prevec.push_back(pre - 1);
+        postvec.push_back(post - 1);
+        //printf("%d, %d\n", pre, post);
+      }
+    }
+    SYN_PARAMS->pairwise_connect_presynaptic = prevec;
+    SYN_PARAMS->pairwise_connect_postsynaptic = postvec;
+    SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE;
+    Model->AddSynapseGroup(layer1, layer2, SYN_PARAMS);
+  }
+}
 
 int main (int argc, char *argv[]){
   // Getting options:
@@ -68,14 +107,10 @@ int main (int argc, char *argv[]){
   float sparseness = 0.1;
   bool fast = false;
   bool plastic = false;
-  int num_timesteps_min_delay = 1;
-  int num_timesteps_max_delay = 1;
   const char* const short_opts = "";
   const option long_opts[] = {
     {"simtime", 1, nullptr, 0},
     {"fast", 0, nullptr, 1},
-    {"num_timesteps_min_delay", 1, nullptr, 2},
-    {"num_timesteps_max_delay", 1, nullptr, 3},
     {"plastic", 0, nullptr, 4},
   };
   // Check the set of options
@@ -94,20 +129,6 @@ int main (int argc, char *argv[]){
         printf("Running in fast mode (no spike collection)\n");
         fast = true;
         break;
-      case 2:
-        printf("Running with minimum delay: %s timesteps\n", optarg);
-        num_timesteps_min_delay = std::stoi(optarg);
-        if (num_timesteps_max_delay < num_timesteps_min_delay)
-          num_timesteps_max_delay = num_timesteps_min_delay;
-        break;
-      case 3:
-        printf("Running with maximum delay: %s timesteps\n", optarg);
-        num_timesteps_max_delay = std::stoi(optarg);
-        if (num_timesteps_max_delay < num_timesteps_min_delay){
-          std::cerr << "ERROR: Max timestep shouldn't be smaller than min!" << endl;
-          exit(1);
-        } 
-        break;
       case 4:
         printf("Running with plasticity ON\n");
         plastic = true;
@@ -120,6 +141,7 @@ int main (int argc, char *argv[]){
   SpikingModel * BenchModel = new SpikingModel();
   float timestep = 0.0001f; // 50us for now
   BenchModel->SetTimestep(timestep);
+  float delayval = 1.5f*powf(10.0, -3.0); // 1.5ms
 
   // Create neuron, synapse and stdp types for this model
   LIFSpikingNeurons * lif_spiking_neurons = new LIFSpikingNeurons();
@@ -131,9 +153,10 @@ int main (int argc, char *argv[]){
   WDSTDP_PARAMS->a_minus = 1.0;
   WDSTDP_PARAMS->tau_plus = 0.02;
   WDSTDP_PARAMS->tau_minus = 0.02;
-  WDSTDP_PARAMS->lambda = 1.0f*pow(10.0, -2);
+  WDSTDP_PARAMS->lambda = 1.0f*powf(10.0, -2);
   WDSTDP_PARAMS->alpha = 2.02;
-  WDSTDP_PARAMS->w_max = 0.3;
+  WDSTDP_PARAMS->w_max = 0.3*powf(10.0, -3);
+  //WDSTDP_PARAMS->nearest_spike_only = true;
   WeightDependentSTDPPlasticity * weightdependent_stdp = new WeightDependentSTDPPlasticity((SpikingSynapses *) voltage_spiking_synapses, (SpikingNeurons *)lif_spiking_neurons, (SpikingNeurons *) poisson_input_spiking_neurons, (stdp_plasticity_parameters_struct *) WDSTDP_PARAMS);
 
   if (plastic)
@@ -158,8 +181,8 @@ int main (int argc, char *argv[]){
   EXC_NEURON_PARAMS->resting_potential_v0 = 0.0f*pow(10.0, -3); // -74mV
   INH_NEURON_PARAMS->resting_potential_v0 = 0.0f*pow(10.0, -3); // -82mV
   
-  EXC_NEURON_PARAMS->after_spike_reset_potential_vreset = 10.0f*pow(10.0, -3);
-  INH_NEURON_PARAMS->after_spike_reset_potential_vreset = 10.0f*pow(10.0, -3);
+  EXC_NEURON_PARAMS->after_spike_reset_potential_vreset = 0.0f*pow(10.0, -3);
+  INH_NEURON_PARAMS->after_spike_reset_potential_vreset = 0.0f*pow(10.0, -3);
 
   EXC_NEURON_PARAMS->absolute_refractory_period = 0.0f*pow(10, -3);  // ms
   INH_NEURON_PARAMS->absolute_refractory_period = 0.0f*pow(10, -3);  // ms
@@ -202,14 +225,14 @@ int main (int argc, char *argv[]){
   voltage_spiking_synapse_parameters_struct * INH_OUT_SYN_PARAMS = new voltage_spiking_synapse_parameters_struct();
   voltage_spiking_synapse_parameters_struct * INPUT_SYN_PARAMS = new voltage_spiking_synapse_parameters_struct();
   // Setting delays
-  EXC_OUT_SYN_PARAMS->delay_range[0] = num_timesteps_min_delay*timestep;
-  EXC_OUT_SYN_PARAMS->delay_range[1] = num_timesteps_max_delay*timestep;
-  INH_OUT_SYN_PARAMS->delay_range[0] = num_timesteps_min_delay*timestep;
-  INH_OUT_SYN_PARAMS->delay_range[1] = num_timesteps_max_delay*timestep;
-  INPUT_SYN_PARAMS->delay_range[0] = num_timesteps_min_delay*timestep;
-  INPUT_SYN_PARAMS->delay_range[1] = num_timesteps_max_delay*timestep;
+  EXC_OUT_SYN_PARAMS->delay_range[0] = delayval;
+  EXC_OUT_SYN_PARAMS->delay_range[1] = delayval;
+  INH_OUT_SYN_PARAMS->delay_range[0] = delayval;
+  INH_OUT_SYN_PARAMS->delay_range[1] = delayval;
+  INPUT_SYN_PARAMS->delay_range[0] = delayval;
+  INPUT_SYN_PARAMS->delay_range[1] = delayval;
   // Set Weight Range (in mVs)
-  float weight_val = 0.1f;
+  float weight_val = 0.1f*powf(10.0, -3.0);
   float gamma = 5.0f;
   EXC_OUT_SYN_PARAMS->weight_range_bottom = weight_val;
   EXC_OUT_SYN_PARAMS->weight_range_top = weight_val;
@@ -219,11 +242,46 @@ int main (int argc, char *argv[]){
   INPUT_SYN_PARAMS->weight_range_top = weight_val;
 
   // Biological Scaling factors (ensures that voltage is in mV)
-  float weight_multiplier = powf(10.0, -3.0);
+  float weight_multiplier = 1.0; //powf(10.0, -3.0);
   EXC_OUT_SYN_PARAMS->biological_conductance_scaling_constant_lambda = weight_multiplier;
   INH_OUT_SYN_PARAMS->biological_conductance_scaling_constant_lambda = weight_multiplier;
   INPUT_SYN_PARAMS->biological_conductance_scaling_constant_lambda = weight_multiplier;
 
+  connect_with_sparsity(
+      input_layer_ID, EXCITATORY_NEURONS[0],
+      input_neuron_params, EXC_NEURON_PARAMS,
+      INPUT_SYN_PARAMS, sparseness,
+      BenchModel);
+  connect_with_sparsity(
+      input_layer_ID, INHIBITORY_NEURONS[0],
+      input_neuron_params, INH_NEURON_PARAMS,
+      INPUT_SYN_PARAMS, sparseness,
+      BenchModel);
+  connect_from_mat(
+    EXCITATORY_NEURONS[0], INHIBITORY_NEURONS[0],
+    EXC_OUT_SYN_PARAMS, 
+    "../../ei.wmat",
+    BenchModel);
+
+
+  if (plastic)
+    EXC_OUT_SYN_PARAMS->plasticity_vec.push_back(weightdependent_stdp);
+  connect_from_mat(
+    EXCITATORY_NEURONS[0], EXCITATORY_NEURONS[0],
+    EXC_OUT_SYN_PARAMS, 
+    "../../ee.wmat",
+    BenchModel);
+  connect_from_mat(
+    INHIBITORY_NEURONS[0], EXCITATORY_NEURONS[0],
+    INH_OUT_SYN_PARAMS, 
+    "../../ie.wmat",
+    BenchModel);
+  connect_from_mat(
+    INHIBITORY_NEURONS[0], INHIBITORY_NEURONS[0],
+    INH_OUT_SYN_PARAMS, 
+    "../../ii.wmat",
+    BenchModel);
+  /*
   // Creating Synapse Populations
   connect_with_sparsity(
       EXCITATORY_NEURONS[0], INHIBITORY_NEURONS[0],
@@ -257,6 +315,7 @@ int main (int argc, char *argv[]){
       input_neuron_params, INH_NEURON_PARAMS,
       INPUT_SYN_PARAMS, sparseness,
       BenchModel);
+    */
 
   /*
   EXC_OUT_SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE

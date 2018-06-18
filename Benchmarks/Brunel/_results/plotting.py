@@ -5,7 +5,8 @@ plt.style.use('ggplot')
 simulators = [
         "Spike",
         "auryn",
-        "ANNarchy"
+        "ANNarchy",
+        "Nest",
         ]
 
 
@@ -45,8 +46,8 @@ ax.set_xticks(np.arange(len(simulators)))
 ax.set_xticklabels(simulators)
 ax.set_xlabel("Simulator")
 ax.set_ylabel("Simulation Run Time (Normalized)")
-#ax.set_yscale('log')
-ax.set_ylim([0, 100])
+ax.set_yscale('log')
+ax.set_ylim([10.0**-2, 10.0**4])
 ax.legend()
 fig.savefig('speed_comparison.png')
 #plt.show()

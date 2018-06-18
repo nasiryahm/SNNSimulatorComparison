@@ -76,7 +76,6 @@ int main(int ac,char *av[]) {
 	
 	bool fast = false;
   bool plastic = false;
-	int num_timesteps_min_delay = 1;
 
 	int errcode = 0;
 
@@ -88,7 +87,6 @@ int main(int ac,char *av[]) {
         desc.add_options()
             ("help", "produce help message")
             ("simtime", po::value<double>(), "duration of simulation")
-            ("num_timesteps_min_delay", po::value<int>(), "minimum delay in seconds")
             ("fast", "turns off most monitoring to reduce IO")
             ("plastic", "turns on STDP")
             ("gamma", po::value<double>(), "gamma factor for inhibitory weight")
@@ -155,9 +153,6 @@ int main(int ac,char *av[]) {
         if (vm.count("fii")) {
 			fwmat_ii = vm["fii"].as<string>();
         } 
-        if (vm.count("num_timesteps_min_delay")) {
-          num_timesteps_min_delay = vm["num_timesteps_min_delay"].as<int>();
-        } 
         if (vm.count("fast")) {
           fast = true;
         } 
@@ -183,9 +178,9 @@ int main(int ac,char *av[]) {
 	neurons_e->set_tau_mem(20.0e-3);
 	neurons_e->set_tau_ref(2.0e-3);
 	neurons_e->e_rest = 0e-3;
-	neurons_e->e_reset = 10e-3;
+	neurons_e->e_reset = 0e-3;
 	neurons_e->thr = 20e-3;
-	neurons_e->set_delay(num_timesteps_min_delay);
+	neurons_e->set_delay(15);
 
 	IafPscDeltaGroup * neurons_i = new IafPscDeltaGroup( ni );
 	neurons_i->set_tau_mem(20.0e-3);
@@ -193,7 +188,7 @@ int main(int ac,char *av[]) {
 	neurons_i->e_rest = 0e-3;
 	neurons_i->e_reset = 0e-3;
 	neurons_i->thr = 20e-3;
-	neurons_e->set_delay(num_timesteps_min_delay);
+	neurons_i->set_delay(15);
 
 	logger->msg("Setting up Poisson input ...",PROGRESS,true);
 	// The traditional way to implement the network is with 

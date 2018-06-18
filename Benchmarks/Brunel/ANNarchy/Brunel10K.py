@@ -1,6 +1,6 @@
 import getopt, sys, timeit
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], '', ['plastic', 'fast', 'simtime=', 'num_timesteps_min_delay=', 'num_timesteps_max_delay='])
+    optlist, args = getopt.getopt(sys.argv[1:], '', ['plastic', 'fast', 'simtime='])
 except getopt.GetoptError as err:
     print(str(err))
     sys.exit(2)
@@ -8,8 +8,6 @@ except getopt.GetoptError as err:
 simtime = 1.0
 fast = False
 plastic = False
-num_timesteps_min_delay = 1
-num_timesteps_max_delay = 1
 for o, a in optlist:
     if (o == "--fast"):
         fast = True
@@ -17,23 +15,13 @@ for o, a in optlist:
     elif (o == "--simtime"):
         simtime=float(a)
         print("Simulation Time: " + a)
-    elif (o == "--num_timesteps_min_delay"):
-        num_timesteps_min_delay=int(a)
-        if (num_timesteps_max_delay < num_timesteps_min_delay):
-            num_timesteps_max_delay = num_timesteps_min_delay
-        print("Minimum delay (in number of timesteps): " + a)
-    elif (o == "--num_timesteps_max_delay"):
-        num_timesteps_max_delay=int(a)
-        if (num_timesteps_max_delay < num_timesteps_min_delay):
-            print("ERROR: Max delay should not be smaller than min!")
-            exit(1)
-        print("Maximum delay (in number of timesteps): " + a)
     elif (o == "--plastic"):
         plastic = True
         print("Running with plasticity on\n")
 
 from ANNarchy import *
 from pylab import *
+from scipy.io import mmread
 
 # ###########################################
 # Configuration
@@ -78,7 +66,7 @@ IAF = Neuron(
         v += g_exc + g_inh - dt*v/tau_m
     """,
     spike="v > v_th",
-    reset="v = 10.0",
+    reset="v = 0.0",
     refractory=2.0
 )
 
@@ -97,13 +85,12 @@ STDP = Synapse(
         tau_stdp * dApost/dt = -Apost : event-driven
     """,
     pre_spike="""
-        g_target += w
         Apre += 1.0
-        w -= lbda * alpha * (w/wmax) * Apost : min=0.0
+        w -= lbda * alpha * w * Apost : min=0.0
     """,                  
     post_spike="""
         Apost += 1.0
-        w += lbda * (1.0 - (w/wmax)) * Apre : max=wmax 
+        w += lbda * (wmax - w) * Apre : max=wmax 
     """
 )
 
@@ -120,6 +107,39 @@ noise = PoissonPopulation(geometry=10000, rates=20.0)
 # ###########################################
 # Projections
 # ###########################################
+A = mmread('../ee.wmat')
+A = A.tolil()
+A[A != 0.0] = JE
+if (plastic):
+    ee = Projection(PE, PE, 'exc', STDP)
+else:
+    ee = Projection(pre=PE, post=PE, target='exc')
+ee.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
+
+A = mmread('../ei.wmat')
+A = A.tolil()
+A[A != 0.0] = JE
+ei = Projection(pre=PE, post=PI, target='exc')
+ei.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
+
+
+A = mmread('../ie.wmat')
+A = A.tolil()
+A[A != 0.0] = JI
+ie = Projection(pre=PI, post=PE, target='inh')
+ie.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
+
+A = mmread('../ii.wmat')
+A = A.tolil()
+A[A != 0.0] = JI
+ii = Projection(pre=PI, post=PI, target='inh')
+ii.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
+
+noisy = Projection(noise, P, 'exc')
+noisy.connect_fixed_number_pre(number=1000, weights=JE, delays=delay)
+
+'''
+ee = []
 if (plastic):
     ee = Projection(PE, PE, 'exc', STDP)
 else:
@@ -131,6 +151,7 @@ ii = Projection(PI, P , 'inh')
 ii.connect_fixed_number_pre(number=CI, weights=JI, delays=delay)
 noisy = Projection(noise, P, 'exc')
 noisy.connect_fixed_number_pre(number=1000, weights=JE, delays=delay)
+'''
 
 compile()
 
@@ -153,13 +174,15 @@ if (fast):
     f.write("%f" % totaltime)
     f.close()
 
-if record:
-    data = m.get()
-
 # ###########################################
 # Data analysis
 # ###########################################
 if record:
+    data = m.get()
     t, n = m.raster_plot(data['spike'])
     print 'Mean firing rate:', len(t)/(float(Nrec)*simtime), 'Hz'
+    weights = ee.w
+    flat_weights = [item for sublist in weights for item in sublist]
+    np.savetxt("plasticweights.txt", np.asarray(flat_weights))
+
 
