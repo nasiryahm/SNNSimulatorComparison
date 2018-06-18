@@ -40,7 +40,7 @@ Brunel N. Dynamics of sparsely connected networks of excitatory and inhibitory s
 The model implemented is a specific version of this network as implemented by the auryn and ANNarchy networks (see repositories).
 
 Results of a simulation of the Brunel10K Benchmark with and without synaptic plasticity
-![Brunel10K Plasticity Benchmark](Benchmarks/Brunel10K/_results/speed_comparison.png)
+![Brunel10K Plasticity Benchmark](Benchmarks/Brunel/_results/speed_comparison.png)
 
 ## Getting all submodules:
 In order to clone this repository with all submodules:
