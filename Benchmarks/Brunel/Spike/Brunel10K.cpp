@@ -10,13 +10,7 @@
 */
 
 
-#include "Spike/Models/SpikingModel.hpp"
-#include "Spike/Simulator/Simulator.hpp"
-#include "Spike/Neurons/LIFSpikingNeurons.hpp"
-#include "Spike/Neurons/SpikingNeurons.hpp"
-#include "Spike/Neurons/PoissonInputSpikingNeurons.hpp"
-#include "Spike/Synapses/VoltageSpikingSynapses.hpp"
-#include "Spike/Plasticity/WeightDependentSTDPPlasticity.hpp"
+#include "Spike/Spike.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -61,17 +55,20 @@ void connect_with_sparsity(
   Model->AddSynapseGroup(input_layer, output_layer, SYN_PARAMS);
 
 }
-void connect_from_mat(
+int connect_from_mat(
     int layer1,
     int layer2,
     spiking_synapse_parameters_struct* SYN_PARAMS, 
     std::string filename,
     SpikingModel* Model){
 
+  int synapse_group_index = -1;
+
   ifstream weightfile;
   string line;
   stringstream ss;
   std::vector<int> prevec, postvec;
+  std::vector<float> weightvec;
   int pre, post;
   float weight;
   int linecount = 0;
@@ -91,14 +88,17 @@ void connect_from_mat(
         ss >> pre >> post >> weight;
         prevec.push_back(pre - 1);
         postvec.push_back(post - 1);
+        weightvec.push_back(weight);
         //printf("%d, %d\n", pre, post);
       }
     }
     SYN_PARAMS->pairwise_connect_presynaptic = prevec;
     SYN_PARAMS->pairwise_connect_postsynaptic = postvec;
+    SYN_PARAMS->pairwise_connect_weight = weightvec;
     SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE;
-    Model->AddSynapseGroup(layer1, layer2, SYN_PARAMS);
+    synapse_group_index = Model->AddSynapseGroup(layer1, layer2, SYN_PARAMS);
   }
+  return(synapse_group_index);
 }
 
 int main (int argc, char *argv[]){
@@ -168,6 +168,10 @@ int main (int argc, char *argv[]){
   BenchModel->input_spiking_neurons = poisson_input_spiking_neurons;
   BenchModel->spiking_synapses = voltage_spiking_synapses;
 
+  //SpikingActivityMonitor* spike_monitor = new SpikingActivityMonitor(lif_spiking_neurons);
+  //BenchModel->AddActivityMonitor(spike_monitor);
+
+
   // Set up Neuron Parameters
   lif_spiking_neuron_parameters_struct * EXC_NEURON_PARAMS = new lif_spiking_neuron_parameters_struct();
   lif_spiking_neuron_parameters_struct * INH_NEURON_PARAMS = new lif_spiking_neuron_parameters_struct();
@@ -231,22 +235,35 @@ int main (int argc, char *argv[]){
   INH_OUT_SYN_PARAMS->delay_range[1] = delayval;
   INPUT_SYN_PARAMS->delay_range[0] = delayval;
   INPUT_SYN_PARAMS->delay_range[1] = delayval;
+
   // Set Weight Range (in mVs)
   float weight_val = 0.1f*powf(10.0, -3.0);
   float gamma = 5.0f;
-  EXC_OUT_SYN_PARAMS->weight_range_bottom = weight_val;
-  EXC_OUT_SYN_PARAMS->weight_range_top = weight_val;
-  INH_OUT_SYN_PARAMS->weight_range_bottom = -gamma * weight_val;
-  INH_OUT_SYN_PARAMS->weight_range_top = -gamma * weight_val;
-  INPUT_SYN_PARAMS->weight_range_bottom = weight_val;
-  INPUT_SYN_PARAMS->weight_range_top = weight_val;
+  /*
+  EXC_OUT_SYN_PARAMS->weight_range[0] = weight_val;
+  EXC_OUT_SYN_PARAMS->weight_range[1] = weight_val;
+  INH_OUT_SYN_PARAMS->weight_range[0] = -gamma * weight_val;
+  INH_OUT_SYN_PARAMS->weight_range[1] = -gamma * weight_val;
+  */
+  INPUT_SYN_PARAMS->weight_range[0] = weight_val;
+  INPUT_SYN_PARAMS->weight_range[1] = weight_val;
 
   // Biological Scaling factors (ensures that voltage is in mV)
   float weight_multiplier = 1.0; //powf(10.0, -3.0);
-  EXC_OUT_SYN_PARAMS->biological_conductance_scaling_constant_lambda = weight_multiplier;
-  INH_OUT_SYN_PARAMS->biological_conductance_scaling_constant_lambda = weight_multiplier;
-  INPUT_SYN_PARAMS->biological_conductance_scaling_constant_lambda = weight_multiplier;
+  EXC_OUT_SYN_PARAMS->weight_scaling_constant = weight_multiplier;
+  INH_OUT_SYN_PARAMS->weight_scaling_constant = weight_multiplier;
+  INPUT_SYN_PARAMS->weight_scaling_constant = weight_multiplier;
 
+  connect_from_mat(
+    INHIBITORY_NEURONS[0], EXCITATORY_NEURONS[0],
+    INH_OUT_SYN_PARAMS, 
+    "../../ie.wmat",
+    BenchModel);
+  connect_from_mat(
+    INHIBITORY_NEURONS[0], INHIBITORY_NEURONS[0],
+    INH_OUT_SYN_PARAMS, 
+    "../../ii.wmat",
+    BenchModel);
   connect_with_sparsity(
       input_layer_ID, EXCITATORY_NEURONS[0],
       input_neuron_params, EXC_NEURON_PARAMS,
@@ -266,20 +283,10 @@ int main (int argc, char *argv[]){
 
   if (plastic)
     EXC_OUT_SYN_PARAMS->plasticity_vec.push_back(weightdependent_stdp);
-  connect_from_mat(
+  int ee_syns = connect_from_mat(
     EXCITATORY_NEURONS[0], EXCITATORY_NEURONS[0],
     EXC_OUT_SYN_PARAMS, 
     "../../ee.wmat",
-    BenchModel);
-  connect_from_mat(
-    INHIBITORY_NEURONS[0], EXCITATORY_NEURONS[0],
-    INH_OUT_SYN_PARAMS, 
-    "../../ie.wmat",
-    BenchModel);
-  connect_from_mat(
-    INHIBITORY_NEURONS[0], INHIBITORY_NEURONS[0],
-    INH_OUT_SYN_PARAMS, 
-    "../../ii.wmat",
     BenchModel);
   /*
   // Creating Synapse Populations
@@ -350,32 +357,9 @@ int main (int argc, char *argv[]){
   /*
     COMPLETE NETWORK SETUP
   */
-  BenchModel->finalise_model();
-  printf("Total Number Of Synapses: %d\n", voltage_spiking_synapses->total_number_of_synapses);
 
-
-  // Create the simulator options
-  Simulator_Options* simoptions = new Simulator_Options();
-  simoptions->run_simulation_general_options->presentation_time_per_stimulus_per_epoch = simtime;
-  if (plastic)
-    simoptions->run_simulation_general_options->apply_plasticity_to_relevant_synapses = true;
-  else 
-    simoptions->run_simulation_general_options->apply_plasticity_to_relevant_synapses = false;
-  if (!fast){
-    simoptions->recording_electrodes_options->collect_neuron_spikes_recording_electrodes_bool = true;
-    simoptions->file_storage_options->save_recorded_neuron_spikes_to_file = true;
-    //simoptions->recording_electrodes_options->collect_neuron_spikes_optional_parameters->human_readable_storage = true;
-    simoptions->recording_electrodes_options->collect_input_neuron_spikes_recording_electrodes_bool = true;
-    simoptions->recording_electrodes_options->network_state_archive_recording_electrodes_bool = true;
-    simoptions->recording_electrodes_options->network_state_archive_optional_parameters->human_readable_storage = false;
-    simoptions->file_storage_options->write_initial_synaptic_weights_to_file_bool = true;
-
-  }
-
-
-  Simulator * simulator = new Simulator(BenchModel, simoptions);
   clock_t starttime = clock();
-  simulator->RunSimulation();
+  BenchModel->run(simtime);
   clock_t totaltime = clock() - starttime;
   if ( fast ){
     std::ofstream timefile;
@@ -384,6 +368,8 @@ int main (int argc, char *argv[]){
     timefile << std::setprecision(10) << ((float)totaltime / CLOCKS_PER_SEC);
     timefile.close();
   }
-  //cudaProfilerStop();
+  // Dump the weights if we are running in plasticity mode
+  if (plastic)
+    BenchModel->spiking_synapses->save_connectivity_as_txt("./", "BRUNELPLASTIC_", ee_syns);
   return(0);
 }
