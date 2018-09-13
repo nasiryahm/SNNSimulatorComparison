@@ -25,19 +25,19 @@ int main()
         allocateMem();
     }
     
-    // Final setup
-    {
-        Timer<> t("Synapse setup:");
-        connectivity_from_mat("../ee.wmat", gEE, Parameters::numExcitatory, Parameters::numExcitatory);
-        connectivity_from_mat("../ei.wmat", d_gEI, Parameters::numExcitatory, Parameters::numInhibitory);
-        connectivity_from_mat("../ii.wmat", d_gII, Parameters::numInhibitory, Parameters::numInhibitory);
-        connectivity_from_mat("../ie.wmat", d_gIE, Parameters::numInhibitory, Parameters::numExcitatory);
-    }
     {
         Timer<> t("Initialization:");
         initialize();
     }
     
+    // Loading Synapses
+    {
+        Timer<> t("Synapse setup:");
+        connectivity_from_mat("../ee.wmat", d_gEE, Parameters::numExcitatory, Parameters::numExcitatory);
+        connectivity_from_mat("../ei.wmat", d_gEI, Parameters::numExcitatory, Parameters::numInhibitory);
+        connectivity_from_mat("../ii.wmat", d_gII, Parameters::numInhibitory, Parameters::numInhibitory);
+        connectivity_from_mat("../ie.wmat", d_gIE, Parameters::numInhibitory, Parameters::numExcitatory);
+    }
 
     // Final setup
     {
