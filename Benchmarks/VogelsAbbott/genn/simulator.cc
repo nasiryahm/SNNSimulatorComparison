@@ -10,6 +10,9 @@
 // Model parameters
 #include "parameters.h"
 
+// Connectivity functions
+#include "matLoader.h"
+
 // Auto-generated model code
 #include "va_benchmark_CODE/definitions.h"
 
@@ -21,10 +24,20 @@ int main()
         Timer<> t("Allocation:");
         allocateMem();
     }
+    
+    // Final setup
+    {
+        Timer<> t("Synapse setup:");
+        connectivity_from_mat("../ee.wmat", gEE, Parameters::numExcitatory, Parameters::numExcitatory);
+        connectivity_from_mat("../ei.wmat", d_gEI, Parameters::numExcitatory, Parameters::numInhibitory);
+        connectivity_from_mat("../ii.wmat", d_gII, Parameters::numInhibitory, Parameters::numInhibitory);
+        connectivity_from_mat("../ie.wmat", d_gIE, Parameters::numInhibitory, Parameters::numExcitatory);
+    }
     {
         Timer<> t("Initialization:");
         initialize();
     }
+    
 
     // Final setup
     {
@@ -39,7 +52,7 @@ int main()
         Timer<> t("Simulation:");
         // Loop through timesteps
         int timesteps_per_second = 10000;
-        for(unsigned int t = 0; t < 100*timesteps_per_second; t++)
+        for(unsigned int t = 0; t < 1*timesteps_per_second; t++)
         {
             // Simulate
 #ifndef CPU_ONLY

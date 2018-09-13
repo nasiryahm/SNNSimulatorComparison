@@ -7,7 +7,7 @@
 //#include "genn_models/exp_curr.h"
 //#include "exp_curr.h"
 #include "lif.h"
-#include "connectors.h"
+//#include "connectors.h"
 
 #include "parameters.h"
 
@@ -50,10 +50,10 @@ void modelDefinition(NNmodel &model)
 
 
     WeightUpdateModels::StaticPulse::VarValues excs_ini(
-            Parameters::excitatoryWeight // 0 - g: the synaptic conductance value
+            0.0 //Parameters::excitatoryWeight // 0 - g: the synaptic conductance value
     );
     WeightUpdateModels::StaticPulse::VarValues inhibs_ini(
-            Parameters::inhibitoryWeight // 0 - g: the synaptic conductance value
+            0.00 //Parameters::inhibitoryWeight // 0 - g: the synaptic conductance value
     );
 
     PostsynapticModels::ExpCond::ParamValues excitatorySyns(
@@ -66,27 +66,34 @@ void modelDefinition(NNmodel &model)
     );
 
     int DELAY = 8; // In timesteps
+    float fixedProb = 0.02;
     auto *ee = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
-        "EE", SynapseMatrixType::DENSE_GLOBALG_INDIVIDUAL_PSM, DELAY,
+        "EE", SynapseMatrixType::DENSE_INDIVIDUALG, DELAY,
         "E", "E",
         {}, excs_ini,
         excitatorySyns, {});
+        //initConnectivity<InitSparseConnectivitySnippet::FixedProbability>(fixedProb));
+
     auto *ei = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
-        "EI", SynapseMatrixType::DENSE_GLOBALG_INDIVIDUAL_PSM, DELAY,
+        "EI", SynapseMatrixType::DENSE_INDIVIDUALG, DELAY,
         "E", "I",
         {}, excs_ini,
         excitatorySyns, {});
+        //initConnectivity<InitSparseConnectivitySnippet::FixedProbability>(fixedProb));
+
     auto *ii = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
-        "II", SynapseMatrixType::DENSE_GLOBALG_INDIVIDUAL_PSM, DELAY,
+        "II", SynapseMatrixType::DENSE_INDIVIDUALG, DELAY,
         "I", "I",
         {}, inhibs_ini,
         InhibitorySyns, {});
+        //initConnectivity<InitSparseConnectivitySnippet::FixedProbability>(fixedProb));
+
     auto *ie = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
-        "IE", SynapseMatrixType::DENSE_GLOBALG_INDIVIDUAL_PSM, DELAY,
+        "IE", SynapseMatrixType::DENSE_INDIVIDUALG, DELAY,
         "I", "E",
         {}, inhibs_ini,
         InhibitorySyns, {});
-
+        //initConnectivity<InitSparseConnectivitySnippet::FixedProbability>(fixedProb));
 
 
     // Configure spike variables so that they can be downloaded to host
