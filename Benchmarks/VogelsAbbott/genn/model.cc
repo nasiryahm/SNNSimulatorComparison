@@ -20,7 +20,7 @@ void modelDefinition(NNmodel &model)
     model.setName("va_benchmark");
 
     GENN_PREFERENCES::autoInitSparseVars = true;
-    GENN_PREFERENCES::defaultVarMode = VarMode::LOC_DEVICE_INIT_DEVICE;
+    GENN_PREFERENCES::defaultVarMode = VarMode::LOC_HOST_DEVICE_INIT_HOST;
 
     //---------------------------------------------------------------------------
     // Build model
@@ -50,10 +50,10 @@ void modelDefinition(NNmodel &model)
 
 
     WeightUpdateModels::StaticPulse::VarValues excs_ini(
-            0.0 //Parameters::excitatoryWeight // 0 - g: the synaptic conductance value
+            Parameters::excitatoryWeight // 0 - g: the synaptic conductance value
     );
     WeightUpdateModels::StaticPulse::VarValues inhibs_ini(
-            0.00 //Parameters::inhibitoryWeight // 0 - g: the synaptic conductance value
+            Parameters::inhibitoryWeight // 0 - g: the synaptic conductance value
     );
 
     PostsynapticModels::ExpCond::ParamValues excitatorySyns(
@@ -68,32 +68,32 @@ void modelDefinition(NNmodel &model)
     int DELAY = 8; // In timesteps
     float fixedProb = 0.02;
     auto *ee = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
-        "EE", SynapseMatrixType::DENSE_INDIVIDUALG, DELAY,
+        "EE", SynapseMatrixType::RAGGED_GLOBALG, DELAY,
         "E", "E",
         {}, excs_ini,
         excitatorySyns, {});
-        //initConnectivity<InitSparseConnectivitySnippet::FixedProbability>(fixedProb));
+    ee->setMaxConnections(Parameters::EEMaxRow);
 
     auto *ei = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
-        "EI", SynapseMatrixType::DENSE_INDIVIDUALG, DELAY,
+        "EI", SynapseMatrixType::RAGGED_GLOBALG, DELAY,
         "E", "I",
         {}, excs_ini,
         excitatorySyns, {});
-        //initConnectivity<InitSparseConnectivitySnippet::FixedProbability>(fixedProb));
+    ei->setMaxConnections(Parameters::EIMaxRow);
 
     auto *ii = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
-        "II", SynapseMatrixType::DENSE_INDIVIDUALG, DELAY,
+        "II", SynapseMatrixType::RAGGED_GLOBALG, DELAY,
         "I", "I",
         {}, inhibs_ini,
         InhibitorySyns, {});
-        //initConnectivity<InitSparseConnectivitySnippet::FixedProbability>(fixedProb));
+    ii->setMaxConnections(Parameters::IIMaxRow);
 
     auto *ie = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
-        "IE", SynapseMatrixType::DENSE_INDIVIDUALG, DELAY,
+        "IE", SynapseMatrixType::RAGGED_GLOBALG, DELAY,
         "I", "E",
         {}, inhibs_ini,
         InhibitorySyns, {});
-        //initConnectivity<InitSparseConnectivitySnippet::FixedProbability>(fixedProb));
+    ie->setMaxConnections(Parameters::IEMaxRow);
 
 
     // Configure spike variables so that they can be downloaded to host

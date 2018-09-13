@@ -33,10 +33,14 @@ int main()
     // Loading Synapses
     {
         Timer<> t("Synapse setup:");
-        connectivity_from_mat("../ee.wmat", d_gEE, Parameters::numExcitatory, Parameters::numExcitatory);
-        connectivity_from_mat("../ei.wmat", d_gEI, Parameters::numExcitatory, Parameters::numInhibitory);
-        connectivity_from_mat("../ii.wmat", d_gII, Parameters::numInhibitory, Parameters::numInhibitory);
-        connectivity_from_mat("../ie.wmat", d_gIE, Parameters::numInhibitory, Parameters::numExcitatory);
+        ragged_connectivity_from_mat("../ee.wmat", CEE.ind, CEE.rowLength, Parameters::numExcitatory, Parameters::EEMaxRow);
+        pushEEStateToDevice();
+        ragged_connectivity_from_mat("../ei.wmat", CEI.ind, CEI.rowLength, Parameters::numExcitatory, Parameters::EIMaxRow);
+        pushEIStateToDevice();
+        ragged_connectivity_from_mat("../ii.wmat", CII.ind, CII.rowLength, Parameters::numInhibitory, Parameters::IIMaxRow);
+        pushIIStateToDevice();
+        ragged_connectivity_from_mat("../ie.wmat", CIE.ind, CIE.rowLength, Parameters::numInhibitory, Parameters::IEMaxRow);
+        pushIEStateToDevice();
     }
 
     // Final setup
@@ -52,7 +56,7 @@ int main()
         Timer<> t("Simulation:");
         // Loop through timesteps
         int timesteps_per_second = 10000;
-        for(unsigned int t = 0; t < 1*timesteps_per_second; t++)
+        for(unsigned int t = 0; t < 100*timesteps_per_second; t++)
         {
             // Simulate
 #ifndef CPU_ONLY

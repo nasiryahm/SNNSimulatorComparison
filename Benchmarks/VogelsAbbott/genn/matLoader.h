@@ -1,12 +1,18 @@
 #pragma once
 #include "va_benchmark_CODE/definitions.h"
 #include <sstream>
+#include "utils.h"
+#include "sparseUtils.h"
 
-void connectivity_from_mat(
+#include "sparseProjection.h"
+
+void ragged_connectivity_from_mat(
     std::string filename,
-    scalar * array,
-    int presize,
-    int postsize){
+    unsigned int* ind,
+    unsigned int* rowLength,
+    unsigned int numPre,
+    unsigned int maxRows)
+{
 
   ifstream weightfile;
   string line;
@@ -37,9 +43,18 @@ void connectivity_from_mat(
       }
     }
   }
+  
+  std::vector<int> precount;
+  for (int pre = 0; pre < numPre; pre++)
+    precount.push_back(0);
 
   // Placing loaded values into array
   for (int indx = 0; indx < prevec.size(); indx++){
-    array[prevec[indx]*postsize + postvec[indx]] = weightvec[indx];
+    ind[prevec[indx]*maxRows + precount[prevec[indx]]] = postvec[indx];
+    precount[prevec[indx]]++;
   }
+  for (int pre = 0; pre < numPre; pre++){
+    rowLength[pre] = precount[pre];
+  }
+
 }
