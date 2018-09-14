@@ -19,7 +19,7 @@ public:
         "if ($(RefracTime) <= 0.0)\n"
         "{\n"
         "  scalar alpha = (($(Isyn)) * $(Rmembrane));\n"
-        "  $(V) += (DT / $(TauM))*(($(Vrest) - $(V) + alpha + $(Ioffset)));\n"
+        "  $(V) += (DT / $(TauM))*(($(Vrest) - $(V)) + alpha + $(Ioffset));\n"
         "}\n"
         "else\n"
         "{\n"

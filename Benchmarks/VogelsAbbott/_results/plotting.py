@@ -3,6 +3,7 @@ plt.style.use('ggplot')
 
 simulators = [
         "Spike",
+        "genn",
         "auryn",
         "ANNarchy",
         "brian2",
@@ -28,7 +29,7 @@ for s in simulators:
 
 # Plotting single timestep results
 fig, ax = plt.subplots()
-ax.set_title("Vogels-Abbott Benchmark Result with 0.1ms synaptic delays")
+ax.set_title("Vogels-Abbott Benchmark w/ 0.1ms synaptic delays")
 ax.bar(
         range(len(simulators)),
         single_timestep_delay_results,
@@ -43,7 +44,7 @@ fig.savefig('single_delay_comparison.png')
 
 
 fig, ax = plt.subplots()
-ax.set_title("Vogels-Abbott Benchmark Result with 0.8ms synaptic delays")
+ax.set_title("Vogels-Abbott Benchmark w/ 0.8ms synaptic delays")
 ax.bar(
         range(len(simulators)),
         eight_timestep_delay_results,

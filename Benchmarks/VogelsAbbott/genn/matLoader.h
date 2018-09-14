@@ -6,6 +6,15 @@
 
 #include "sparseProjection.h"
 
+void reset_array(
+    float* array,
+    unsigned int num_elements)
+{
+  for (int n=0; n < num_elements; n++){
+    array[n] = 0.0f;
+  }
+};
+
 void ragged_connectivity_from_mat(
     std::string filename,
     unsigned int* ind,

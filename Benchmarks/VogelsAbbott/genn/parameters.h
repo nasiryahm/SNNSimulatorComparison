@@ -31,9 +31,11 @@ namespace Parameters
     const unsigned int IIMaxRow = 31;
     const unsigned int IEMaxRow = 87;
 
+    const unsigned int synapticDelay = 8;
+
     const double scale = (4000.0 / (double)numNeurons) * (0.02 / probabilityConnection);
 
-    const double excitatoryWeight = 0.4f; // * scale;
-    const double inhibitoryWeight = 5.1f; // * scale;
+    const double excitatoryWeight = 0.4e-8f; // * scale;
+    const double inhibitoryWeight = 5.1e-8f; // * scale;
 
 }

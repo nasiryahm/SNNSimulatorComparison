@@ -11,8 +11,6 @@
 
 #include "parameters.h"
 
-using namespace BoBRobotics;
-
 void modelDefinition(NNmodel &model)
 {
     initGeNN();
@@ -30,8 +28,8 @@ void modelDefinition(NNmodel &model)
         Parameters::thresholdVoltage);  // 1 - max
 
     // LIF model parameters
-    GeNNModels::LIF::ParamValues lifParams(
-        20.0,    // 0 - C
+    BoBRobotics::GeNNModels::LIF::ParamValues lifParams(
+        200.0e-9,    // 0 - C
         20.0,   // 1 - TauM
         Parameters::restVoltage,  // 2 - Vrest
         Parameters::resetVoltage,  // 3 - Vreset
@@ -40,33 +38,32 @@ void modelDefinition(NNmodel &model)
         5.0);    // 6 - TauRefrac
 
     // LIF initial conditions
-    GeNNModels::LIF::VarValues lifInit(
+    BoBRobotics::GeNNModels::LIF::VarValues lifInit(
         Parameters::restVoltage, //initVar<InitVarSnippet::Uniform>(vDist),     // 0 - V
         0.0);   // 1 - RefracTime
 
     // Create IF_curr neuron
-    auto *e = model.addNeuronPopulation<GeNNModels::LIF>("E", Parameters::numExcitatory, lifParams, lifInit);
-    auto *i = model.addNeuronPopulation<GeNNModels::LIF>("I", Parameters::numInhibitory, lifParams, lifInit);
+    auto *e = model.addNeuronPopulation<BoBRobotics::GeNNModels::LIF>("E", Parameters::numExcitatory, lifParams, lifInit);
+    auto *i = model.addNeuronPopulation<BoBRobotics::GeNNModels::LIF>("I", Parameters::numInhibitory, lifParams, lifInit);
 
 
     WeightUpdateModels::StaticPulse::VarValues excs_ini(
-            Parameters::excitatoryWeight // 0 - g: the synaptic conductance value
+          Parameters::excitatoryWeight // 0 - g: the synaptic conductance value
     );
     WeightUpdateModels::StaticPulse::VarValues inhibs_ini(
-            Parameters::inhibitoryWeight // 0 - g: the synaptic conductance value
+          Parameters::inhibitoryWeight // 0 - g: the synaptic conductance value
     );
 
     PostsynapticModels::ExpCond::ParamValues excitatorySyns(
             5.0,      // 0 - tau_S: decay time constant for S [ms]
             -0.0     // 1 - Erev: Reversal potential
     );
-    PostsynapticModels::ExpCond::ParamValues InhibitorySyns(
+    PostsynapticModels::ExpCond::ParamValues inhibitorySyns(
             10.0,      // 0 - tau_S: decay time constant for S [ms]
             -80.0     // 1 - Erev: Reversal potential
     );
 
-    int DELAY = 8; // In timesteps
-    float fixedProb = 0.02;
+    int DELAY = Parameters::synapticDelay; // In timesteps
     auto *ee = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
         "EE", SynapseMatrixType::RAGGED_GLOBALG, DELAY,
         "E", "E",
@@ -85,14 +82,14 @@ void modelDefinition(NNmodel &model)
         "II", SynapseMatrixType::RAGGED_GLOBALG, DELAY,
         "I", "I",
         {}, inhibs_ini,
-        InhibitorySyns, {});
+        inhibitorySyns, {});
     ii->setMaxConnections(Parameters::IIMaxRow);
 
     auto *ie = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
         "IE", SynapseMatrixType::RAGGED_GLOBALG, DELAY,
         "I", "E",
         {}, inhibs_ini,
-        InhibitorySyns, {});
+        inhibitorySyns, {});
     ie->setMaxConnections(Parameters::IEMaxRow);
 
 
