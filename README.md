@@ -9,6 +9,7 @@ Currently the simulators being compared are:
 - [Brian Simulator (v2)](https://github.com/brian-team/brian2)
 - [Auryn](https://github.com/fzenke/auryn)
 - [ANNarchy](https://github.com/ANNarchy/ANNarchy)
+- [GeNN](https://github.com/genn-team/genn)
 - [Spike](https://github.com/nasiryahm/Spike)
 
 ## Results
@@ -25,13 +26,14 @@ All simulations load the same set of weights (ee/ei/ie/ii.wmat located in the be
 
 The installed python (conda) environment details are located in the conda\_req.txt file.
 
-Results of a simulation of the VogelsAbbott Benchmark with ALL synaptic delays set to 0.1ms
-![0.1ms Delay Figure](Benchmarks/VogelsAbbott/_results/single_delay_comparison.png)
-
 Results of a simulation of the VogelsAbbott Benchmark with ALL synaptic delays set to 0.8ms
 ![0.8ms Delay Figure](Benchmarks/VogelsAbbott/_results/eight_delay_comparison.png)
 
 A comparison of the ISI distributions, firing rasters, and firing rates is present in an [iPython notebook](Benchmarks/VogelsAbbott/_results/SimulatorComparisons.ipynb). These results were produced from files which are automatically dumped when the "--fast" option is not used in simulation execution.
+
+#### Multi-threaded Comparison
+![Multi-threaded Comparison](Benchmarks/VogelsAbbott/_results/auryn_multithreaded/multithreaded_comparison.png)
+Above, only Spike and auryn are compared. Auryn is benchmarked with 1, 2, 4, and 8 threads on a system with a 16 core Intel Xeon E5-2623 v4. These benchmarks are shown as black points on the plot above. An exponential curve is fit to the auryn datapoints as shown in blue. For comparison, the single-threaded, single-GPU speed of Spike is shown in red to compare.
 
 ### Brunel 10,000 Neuron / 10^7 Synapse Plastic Network
 Source Paper:
