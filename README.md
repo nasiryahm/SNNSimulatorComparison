@@ -33,7 +33,7 @@ A comparison of the ISI distributions, firing rasters, and firing rates is prese
 
 #### Multi-threaded Comparison
 ![Multi-threaded Comparison](Benchmarks/VogelsAbbott/_results/auryn_multithreaded/multithreaded_comparison.png)
-Above, only Spike and auryn are compared. Auryn is benchmarked with 1, 2, 4, and 8 threads on a system with a 16 core Intel Xeon E5-2623 v4. These benchmarks are shown as black points on the plot above. An exponential curve is fit to the auryn datapoints as shown in blue. For comparison, the single-threaded, single-GPU speed of Spike is shown in red to compare.
+Above, only Spike and auryn are compared. Auryn is benchmarked with 1, 2, 4, and 8 threads on a system with a 16 core Intel Xeon E5-2623 v4. These benchmarks are shown as black points on the plot above. An exponential decay curve is fit to the auryn datapoints as shown in black. For comparison, the single-threaded, single-GPU speed of Spike is shown in red to compare.
 
 ### Brunel 10,000 Neuron / 10^7 Synapse Plastic Network
 Source Paper:
