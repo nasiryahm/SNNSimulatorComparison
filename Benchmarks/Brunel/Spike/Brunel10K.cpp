@@ -156,7 +156,7 @@ int main (int argc, char *argv[]){
   WDSTDP_PARAMS->lambda = 1.0f*powf(10.0, -2);
   WDSTDP_PARAMS->alpha = 2.02;
   WDSTDP_PARAMS->w_max = 0.3*powf(10.0, -3);
-  //WDSTDP_PARAMS->nearest_spike_only = true;
+  WDSTDP_PARAMS->nearest_spike_only = false;
   WeightDependentSTDPPlasticity * weightdependent_stdp = new WeightDependentSTDPPlasticity((SpikingSynapses *) voltage_spiking_synapses, (SpikingNeurons *)lif_spiking_neurons, (SpikingNeurons *) poisson_input_spiking_neurons, (stdp_plasticity_parameters_struct *) WDSTDP_PARAMS);
 
   if (plastic)
@@ -168,8 +168,12 @@ int main (int argc, char *argv[]){
   BenchModel->input_spiking_neurons = poisson_input_spiking_neurons;
   BenchModel->spiking_synapses = voltage_spiking_synapses;
 
-  //SpikingActivityMonitor* spike_monitor = new SpikingActivityMonitor(lif_spiking_neurons);
-  //BenchModel->AddActivityMonitor(spike_monitor);
+  SpikingActivityMonitor* spike_monitor = new SpikingActivityMonitor(lif_spiking_neurons);
+  SpikingActivityMonitor* input_spike_monitor = new SpikingActivityMonitor(poisson_input_spiking_neurons);
+  if (!fast){
+    BenchModel->AddActivityMonitor(spike_monitor);
+    BenchModel->AddActivityMonitor(input_spike_monitor);
+  }
 
 
   // Set up Neuron Parameters
@@ -188,8 +192,8 @@ int main (int argc, char *argv[]){
   EXC_NEURON_PARAMS->after_spike_reset_potential_vreset = 0.0f*pow(10.0, -3);
   INH_NEURON_PARAMS->after_spike_reset_potential_vreset = 0.0f*pow(10.0, -3);
 
-  EXC_NEURON_PARAMS->absolute_refractory_period = 0.0f*pow(10, -3);  // ms
-  INH_NEURON_PARAMS->absolute_refractory_period = 0.0f*pow(10, -3);  // ms
+  EXC_NEURON_PARAMS->absolute_refractory_period = 2.0f*pow(10, -3);  // ms
+  INH_NEURON_PARAMS->absolute_refractory_period = 2.0f*pow(10, -3);  // ms
 
   EXC_NEURON_PARAMS->threshold_for_action_potential_spike = 20.0f*pow(10.0, -3);
   INH_NEURON_PARAMS->threshold_for_action_potential_spike = 20.0f*pow(10.0, -3);
@@ -249,7 +253,7 @@ int main (int argc, char *argv[]){
   INPUT_SYN_PARAMS->weight_range[1] = weight_val;
 
   // Biological Scaling factors (ensures that voltage is in mV)
-  float weight_multiplier = 1.0; //powf(10.0, -3.0);
+  float weight_multiplier = 1.0f; //powf(10.0, -3.0);
   EXC_OUT_SYN_PARAMS->weight_scaling_constant = weight_multiplier;
   INH_OUT_SYN_PARAMS->weight_scaling_constant = weight_multiplier;
   INPUT_SYN_PARAMS->weight_scaling_constant = weight_multiplier;
@@ -264,6 +268,12 @@ int main (int argc, char *argv[]){
     INH_OUT_SYN_PARAMS, 
     "../../ii.wmat",
     BenchModel);
+  connect_from_mat(
+    EXCITATORY_NEURONS[0], INHIBITORY_NEURONS[0],
+    EXC_OUT_SYN_PARAMS, 
+    "../../ei.wmat",
+    BenchModel);
+
   connect_with_sparsity(
       input_layer_ID, EXCITATORY_NEURONS[0],
       input_neuron_params, EXC_NEURON_PARAMS,
@@ -274,12 +284,6 @@ int main (int argc, char *argv[]){
       input_neuron_params, INH_NEURON_PARAMS,
       INPUT_SYN_PARAMS, sparseness,
       BenchModel);
-  connect_from_mat(
-    EXCITATORY_NEURONS[0], INHIBITORY_NEURONS[0],
-    EXC_OUT_SYN_PARAMS, 
-    "../../ei.wmat",
-    BenchModel);
-
 
   if (plastic)
     EXC_OUT_SYN_PARAMS->plasticity_vec.push_back(weightdependent_stdp);
@@ -288,6 +292,7 @@ int main (int argc, char *argv[]){
     EXC_OUT_SYN_PARAMS, 
     "../../ee.wmat",
     BenchModel);
+  
   /*
   // Creating Synapse Populations
   connect_with_sparsity(
@@ -370,6 +375,10 @@ int main (int argc, char *argv[]){
   }
   // Dump the weights if we are running in plasticity mode
   if (plastic)
-    BenchModel->spiking_synapses->save_connectivity_as_txt("./", "BRUNELPLASTIC_", ee_syns);
+    BenchModel->spiking_synapses->save_connectivity_as_binary("./", "BRUNELPLASTIC_", ee_syns);
+  if (!fast){
+    spike_monitor->save_spikes_as_binary("./", "BR");
+    input_spike_monitor->save_spikes_as_binary("./", "INPUT_BR");
+  }
   return(0);
 }
