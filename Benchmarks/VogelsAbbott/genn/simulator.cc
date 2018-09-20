@@ -65,19 +65,19 @@ int main (int argc, char *argv[])
     // Loading Synapses
     {
         Timer<> t("Synapse setup:");
-        ragged_connectivity_from_mat("../ee.wmat", CEE.ind, CEE.rowLength, Parameters::numExcitatory, Parameters::EEMaxRow);
+        ragged_connectivity_from_mat("../ee.wmat", gEE, CEE.ind, CEE.rowLength, Parameters::numExcitatory, Parameters::EEMaxRow);
         reset_array(inSynEE, Parameters::numExcitatory);
         pushEEStateToDevice();
 
-        ragged_connectivity_from_mat("../ei.wmat", CEI.ind, CEI.rowLength, Parameters::numExcitatory, Parameters::EIMaxRow);
+        ragged_connectivity_from_mat("../ei.wmat", gEI, CEI.ind, CEI.rowLength, Parameters::numExcitatory, Parameters::EIMaxRow);
         reset_array(inSynEI, Parameters::numInhibitory);
         pushEIStateToDevice();
 
-        ragged_connectivity_from_mat("../ii.wmat", CII.ind, CII.rowLength, Parameters::numInhibitory, Parameters::IIMaxRow);
+        ragged_connectivity_from_mat("../ii.wmat", gII, CII.ind, CII.rowLength, Parameters::numInhibitory, Parameters::IIMaxRow);
         reset_array(inSynII, Parameters::numInhibitory);
         pushIIStateToDevice();
 
-        ragged_connectivity_from_mat("../ie.wmat", CIE.ind, CIE.rowLength, Parameters::numInhibitory, Parameters::IEMaxRow);
+        ragged_connectivity_from_mat("../ie.wmat", gIE, CIE.ind, CIE.rowLength, Parameters::numInhibitory, Parameters::IEMaxRow);
         reset_array(inSynIE, Parameters::numExcitatory);
         pushIEStateToDevice();
     }

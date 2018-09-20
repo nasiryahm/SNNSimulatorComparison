@@ -65,28 +65,28 @@ void modelDefinition(NNmodel &model)
 
     int DELAY = Parameters::synapticDelay; // In timesteps
     auto *ee = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
-        "EE", SynapseMatrixType::RAGGED_GLOBALG, DELAY,
+        "EE", SynapseMatrixType::RAGGED_INDIVIDUALG, DELAY,
         "E", "E",
         {}, excs_ini,
         excitatorySyns, {});
     ee->setMaxConnections(Parameters::EEMaxRow);
 
     auto *ei = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
-        "EI", SynapseMatrixType::RAGGED_GLOBALG, DELAY,
+        "EI", SynapseMatrixType::RAGGED_INDIVIDUALG, DELAY,
         "E", "I",
         {}, excs_ini,
         excitatorySyns, {});
     ei->setMaxConnections(Parameters::EIMaxRow);
 
     auto *ii = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
-        "II", SynapseMatrixType::RAGGED_GLOBALG, DELAY,
+        "II", SynapseMatrixType::RAGGED_INDIVIDUALG, DELAY,
         "I", "I",
         {}, inhibs_ini,
         inhibitorySyns, {});
     ii->setMaxConnections(Parameters::IIMaxRow);
 
     auto *ie = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::ExpCond>(
-        "IE", SynapseMatrixType::RAGGED_GLOBALG, DELAY,
+        "IE", SynapseMatrixType::RAGGED_INDIVIDUALG, DELAY,
         "I", "E",
         {}, inhibs_ini,
         inhibitorySyns, {});

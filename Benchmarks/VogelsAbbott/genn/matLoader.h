@@ -17,6 +17,7 @@ void reset_array(
 
 void ragged_connectivity_from_mat(
     std::string filename,
+    float* g,
     unsigned int* ind,
     unsigned int* rowLength,
     unsigned int numPre,
@@ -60,6 +61,7 @@ void ragged_connectivity_from_mat(
   // Placing loaded values into array
   for (int indx = 0; indx < prevec.size(); indx++){
     ind[prevec[indx]*maxRows + precount[prevec[indx]]] = postvec[indx];
+    g[prevec[indx]*maxRows + precount[prevec[indx]]] = weightvec[indx];
     precount[prevec[indx]]++;
   }
   for (int pre = 0; pre < numPre; pre++){

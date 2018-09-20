@@ -53,47 +53,61 @@ defaultclock.dt = timestep*ms
 NE = 3200
 NI = NE/4
 
-gl = 10.0*nS
-we = 0.4*gl
-wi = 5.1*gl
+# gl = 10.0*nS
+we = 0.4 #*gl
+wi = 5.1 #*gl
+tau_mem = 20.0*ms
 tau_ampa  = 5.0*ms
 tau_gaba = 10.0*ms
 
 el = -60.*mV
 er = -80.*mV
 vt = -50.*mV
-memc = 200.0*pfarad
-bgcurrent = 200.*pA
+vr = -60.*mV
+#memc = 200.0*pfarad
+bgcurrent = 20.0*mV
+
 
 eqs = '''
-dv/dt  = (-gl*(v-el)-(g_ampa*v+g_gaba*(v-er))+bgcurrent)/memc : volt
-dg_ampa/dt = -g_ampa/tau_ampa : siemens
-dg_gaba/dt = -g_gaba/tau_gaba : siemens
+dv/dt  = (-(v-el)-(g_ampa*v+g_gaba*(v-er))+bgcurrent)/tau_mem : volt (unless refractory)
+dg_ampa/dt = -g_ampa/tau_ampa : 1
+dg_gaba/dt = -g_gaba/tau_gaba : 1
 '''
 
-P = NeuronGroup(NE+NI, model=eqs, threshold='v>vt', reset='v = el', refractory=5*ms, method='euler')
+P = NeuronGroup(NE+NI, model=eqs, threshold='v>vt', reset='v = vr', refractory=5.0*ms, method='euler')
 P.v = el
-P.g_ampa = 0.*nS
-P.g_gaba = 0.*nS
+P.g_ampa = 0.
+P.g_gaba = 0.
 Pe = P[:NE]
 Pi = P[NE:]
 
 #Ce = Synapses(P, P, on_pre='ge += we')
-conn_ee = Synapses(Pe,Pe,on_pre='g_ampa += we', delay=num_timesteps_min_delay*defaultclock.dt)
-conn_ei = Synapses(Pe,Pi,on_pre='g_ampa += we', delay=num_timesteps_min_delay*defaultclock.dt)
-conn_ie = Synapses(Pi,Pe,on_pre='g_gaba += wi', delay=num_timesteps_min_delay*defaultclock.dt)
-conn_ii = Synapses(Pi,Pi,on_pre='g_gaba += wi', delay=num_timesteps_min_delay*defaultclock.dt)
-
+conn_ee = Synapses(Pe,Pe,model="w:1",on_pre='g_ampa += w', method='euler')
+conn_ei = Synapses(Pe,Pi,model="w:1",on_pre='g_ampa += w', method='euler')
+conn_ie = Synapses(Pi,Pe,model="w:1",on_pre='g_gaba += w', method='euler')
+conn_ii = Synapses(Pi,Pi,model="w:1",on_pre='g_gaba += w', method='euler')
 
 
 ee_mat = mmread('../ee.wmat')
 ei_mat = mmread('../ei.wmat')
 ie_mat = mmread('../ie.wmat')
 ii_mat = mmread('../ii.wmat')
+
 conn_ee.connect(i=ee_mat.row, j=ee_mat.col)
+conn_ee.w[:,:]=we
+conn_ee.delay = num_timesteps_min_delay*timestep*ms
+
 conn_ei.connect(i=ei_mat.row, j=ei_mat.col)
+conn_ei.w[:,:]=we
+conn_ei.delay = num_timesteps_min_delay*timestep*ms
+
 conn_ie.connect(i=ie_mat.row, j=ie_mat.col)
+conn_ie.w[:,:]=wi
+conn_ie.delay = num_timesteps_min_delay*timestep*ms
+
 conn_ii.connect(i=ii_mat.row, j=ii_mat.col)
+conn_ii.w[:,:]=wi
+conn_ii.delay = num_timesteps_min_delay*timestep*ms
 
 if (num_timesteps_min_delay != num_timesteps_max_delay):
     delaysetup = str(num_timesteps_min_delay*timestep) + "*ms + " + str((num_timesteps_max_delay - num_timesteps_min_delay)*timestep) + "*ms*rand()"
