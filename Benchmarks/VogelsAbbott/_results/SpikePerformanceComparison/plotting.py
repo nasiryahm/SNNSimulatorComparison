@@ -4,8 +4,8 @@ plt.style.use('seaborn-paper')
 
 comparisons = [
         "NONE",
-        "ASG_ONLY",
         "TG_ONLY",
+        "ASG_ONLY",
         "TG_ASG",
         ]
 
