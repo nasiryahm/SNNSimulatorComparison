@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
-plt.style.use('ggplot')
+#plt.style.use('ggplot')
+plt.style.use('seaborn-paper')
 
 simulators = [
         "Spike",
-        "genn",
+        "GeNN",
         "auryn",
         "ANNarchy",
         "brian2",
@@ -44,15 +45,15 @@ fig.savefig('single_delay_comparison.png')
 
 
 fig, ax = plt.subplots()
-ax.set_title("Vogels-Abbott Benchmark w/ 0.8ms synaptic delays")
+ax.set_title("Comparing Simulators with the Vogels-Abbott Benchmark", size=12)
 ax.bar(
         range(len(simulators)),
         eight_timestep_delay_results,
         tick_label=simulators,
         align='center', color='k')
-ax.set_xlabel("Simulator")
-ax.set_ylabel("Simulation Run Time (Normalized)")
+ax.set_xlabel("Simulator", size=12)
+ax.set_ylabel("Normalized Simulation Run Time\n(Shorter is faster)", size=12)
 ax.set_ylim([10.0**-2, 10.0**2])
 ax.set_yscale('log')
-fig.savefig('eight_delay_comparison.png')
+fig.savefig('eight_delay_comparison.png', dpi=300)
 #plt.show()

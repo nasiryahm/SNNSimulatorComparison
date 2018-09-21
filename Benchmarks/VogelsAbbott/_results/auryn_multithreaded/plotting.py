@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
-plt.style.use('ggplot')
+#plt.style.use('ggplot')
+plt.style.use('seaborn-paper')
 
 
 SpikeBenchmarkPath = "../timestep_8_delay/Spike.dat"
@@ -21,7 +22,7 @@ for numCores in AurynBenchmarkCores:
 print(AurynBenchmarkCores, AurynBenchmarks)
 
 # Fitting a line
-points = np.linspace(0, 8, 100)
+points = np.linspace(1, 8, 100)
 
 def expfunc(x, a, b, c):
     return a * np.exp(-b *x) + c
@@ -33,14 +34,15 @@ popt, pcov = curve_fit(expfunc, AurynBenchmarkCores, AurynBenchmarks)
 
 # Plotting single timestep results
 fig, ax = plt.subplots()
-ax.set_title("Multi-Threaded Vogels Abbot Benchmark Comparison")
+ax.set_title("Multi-Threaded Vogels Abbot Benchmark Comparison\nauryn vs Spike", size=12)
 ax.scatter(AurynBenchmarkCores, AurynBenchmarks, color='k', zorder=2, s=50)
-ax.plot([0, 8], [SpikeBenchmark, SpikeBenchmark], color='r', linewidth = 5, alpha=0.5, zorder=1, label="Spike", linestyle='--')
-ax.plot(points, expfunc(points, *popt), color='k', linewidth = 5, alpha=0.5, zorder=1, label="auryn")
+ax.scatter([1], [SpikeBenchmark], color='r', zorder=2, s=50)
+ax.plot([1, 8], [SpikeBenchmark, SpikeBenchmark], color='r', linewidth = 3, alpha=0.75, zorder=1, label="Spike", linestyle='--')
+ax.plot(points, expfunc(points, *popt), color='k', linewidth = 3, alpha=0.75, zorder=1, label="auryn")
 ax.legend()
-ax.set_xlabel("Number of CPU Cores")
-ax.set_ylabel("Simulation Run Time (Normalized)")
+ax.set_xlabel("Number of CPU Cores", size=12)
+ax.set_ylabel("Simulation Run Time (Normalized)", size=12)
 ax.set_ylim([10.0**-2, 10.0**0])
 ax.set_yscale('log')
-fig.savefig('multithreaded_comparison.png')
+fig.savefig('multithreaded_comparison.png', dpi=300)
 #plt.show()

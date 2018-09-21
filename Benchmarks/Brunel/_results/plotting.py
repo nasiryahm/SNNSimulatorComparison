@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-plt.style.use('ggplot')
+#plt.style.use('ggplot')
+plt.style.use('seaborn-paper')
 
 simulators = [
         "Spike",
@@ -29,7 +30,7 @@ for s in simulators:
 
 # Plotting single timestep results
 fig, ax = plt.subplots()
-ax.set_title("Brunel 10^7 Synapse Benchmark Result")
+ax.set_title("Comparison Simulator with the Brunel Benchmark", size=12)
 #tick_label=simulators,
 barwidth = 0.4
 ax.bar(
@@ -45,10 +46,10 @@ ax.bar(
 
 ax.set_xticks(np.arange(len(simulators)))
 ax.set_xticklabels(simulators)
-ax.set_xlabel("Simulator")
-ax.set_ylabel("Simulation Run Time (Normalized)")
+ax.set_xlabel("Simulator", size=12)
+ax.set_ylabel("Simulation Run Time (Normalized)", size=12)
 ax.set_yscale('log')
 ax.set_ylim([10.0**-2, 10.0**4])
 ax.legend()
-fig.savefig('speed_comparison.png')
+fig.savefig('Brunel_Comparison.png', dpi=300)
 #plt.show()
