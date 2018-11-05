@@ -1,8 +1,6 @@
 # SNNSimulatorComparison
 Comparison of Spiking Neural Network Simulator Performance
 
-__Note: Tests are still being conducted on the benchmark model for each simulator and the results may change as the models are corrected__
-
 Simulators are included as git submodules.
 Currently the simulators being compared are:
 - [NEST Simulator (using pyNEST)](https://github.com/nest/nest-simulator/)
@@ -11,6 +9,12 @@ Currently the simulators being compared are:
 - [ANNarchy](https://github.com/ANNarchy/ANNarchy)
 - [GeNN](https://github.com/genn-team/genn)
 - [Spike](https://github.com/nasiryahm/Spike)
+
+In order to clone the repository AND all of the specific simulator versions used, please run;
+
+```
+git clone --recurse-submodules https://github.com/nasiryahm/SNNSimulatorComparison
+```
 
 ## Results
 ### Vogels Abbott Benchmark
@@ -33,7 +37,7 @@ A comparison of the ISI distributions, firing rasters, and firing rates is prese
 
 #### Multi-threaded Comparison
 ![Multi-threaded Comparison](Benchmarks/VogelsAbbott/_results/auryn_multithreaded/multithreaded_comparison.png)
-Above, only Spike and auryn are compared. Auryn is benchmarked with 1, 2, 4, and 8 threads on a system with a 16 core Intel Xeon E5-2623 v4. These benchmarks are shown as black points on the plot above. An exponential decay curve is fit to the auryn datapoints as shown in black. For comparison, the single-threaded, single-GPU speed of Spike is shown in red to compare.
+Above, only Spike and auryn are compared. Auryn is benchmarked with 1, 2, 4, and 8 threads on a system with a 16 core Intel Xeon E5-2623 v4. These benchmarks are shown as black points on the plot above. An exponential decay curve is fit to the auryn datapoints as shown in black. For comparison, the single-threaded, single-GPU speed of Spike is shown in red.
 
 ### Brunel 10,000 Neuron / 10^7 Synapse Plastic Network
 Source Paper:
@@ -57,11 +61,11 @@ ANNarchy and Brian can be installed using `pip install Simulators/ANNarchy/` and
 The dependencies and packages required for the installation of these two packages can be found in the requirements.txt file in the root of this repo.
 
 ## Running a speed test
-VogelsAbbotBenchmark.sh and Brunel10KBenchmark.sh are bash scripts that outlines the simulation length and delay style to simulate in each simulator.
-This will produce a timefile.dat file in each folder under "Benchmarks/BENCHMARK/SIMULATOR". This timefile.dat contains a single ASCII float which is the time required to run the simulation (simulation run time only, not for the rest of the script).
-The "Benchmarks/VogelsAbbott/\_results" folder contains a plotting.py file with the matplotlib commands used to produce the results plots.
+After installing/compiling the simulators (located in the Simulators folder), the models can be compiled as necessary in the Benchmarks folder.
+Each model has a few key command line arguments which can be used in order to set the behaviour;
 
-The benchmark bash scripts expect the existence of a conda environment (with packages listed in requirements.txt) of the name "simulatorcomparison".
+--simtime X ; Sets the number of seconds (X) for which the simulation will run
+--fast ; is a boolean which will ensure that any spike recording is turned off for efficiency and the execution of the model execution step is timed and stored in a "timefile.bin" file.
 
 ## Testing ranges of delays:
 Spike, Brian2, and Nest support ranges of delays. ANNarchy informs us that it can handle uniform delays (experimentally) though does not compile in this case.

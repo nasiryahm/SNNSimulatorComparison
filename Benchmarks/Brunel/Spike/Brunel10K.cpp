@@ -58,10 +58,11 @@ void connect_with_sparsity(
 int connect_from_mat(
     int layer1,
     int layer2,
-    spiking_synapse_parameters_struct* SYN_PARAMS, 
+    voltage_spiking_synapse_parameters_struct* SYN_PARAMS, 
     std::string filename,
-    SpikingModel* Model){
-
+    SpikingModel* Model,
+    float timestep,
+    int numskipgroups=1){
   int synapse_group_index = -1;
 
   ifstream weightfile;
@@ -69,6 +70,7 @@ int connect_from_mat(
   stringstream ss;
   std::vector<int> prevec, postvec;
   std::vector<float> weightvec;
+  std::vector<float> delayvec;
   int pre, post;
   float weight;
   int linecount = 0;
@@ -89,15 +91,20 @@ int connect_from_mat(
         prevec.push_back(pre - 1);
         postvec.push_back(post - 1);
         weightvec.push_back(weight);
-        //printf("%d, %d\n", pre, post);
+        delayvec.push_back(SYN_PARAMS->delay_range[0] - (linecount % numskipgroups)*timestep);
+        //printf("%d\n", (linecount % numskipgroups));
+
+        //printf("%d, %d, %f\n", pre, post, weight);
       }
     }
     SYN_PARAMS->pairwise_connect_presynaptic = prevec;
     SYN_PARAMS->pairwise_connect_postsynaptic = postvec;
     SYN_PARAMS->pairwise_connect_weight = weightvec;
+    SYN_PARAMS->pairwise_connect_delay = delayvec;
     SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE;
     synapse_group_index = Model->AddSynapseGroup(layer1, layer2, SYN_PARAMS);
   }
+
   return(synapse_group_index);
 }
 
@@ -106,12 +113,16 @@ int main (int argc, char *argv[]){
   float simtime = 20.0;
   float sparseness = 0.1;
   bool fast = false;
+  bool no_TG = false;
   bool plastic = false;
+  int numsyngroups = 1;
   const char* const short_opts = "";
   const option long_opts[] = {
     {"simtime", 1, nullptr, 0},
     {"fast", 0, nullptr, 1},
     {"plastic", 0, nullptr, 4},
+    {"NOTG", 0, nullptr, 5},
+    {"num_synapse_groups", 1, nullptr, 6}
   };
   // Check the set of options
   while (true) {
@@ -132,6 +143,14 @@ int main (int argc, char *argv[]){
       case 4:
         printf("Running with plasticity ON\n");
         plastic = true;
+        break;
+      case 5:
+        printf("TURNING OFF TIMESTEP GROUPING\n");
+        no_TG = true;
+        break;
+      case 6:
+        printf("Number of synapse groups; %s\n", optarg);
+        numsyngroups = std::stoi(optarg);
         break;
     }
   };
@@ -258,21 +277,25 @@ int main (int argc, char *argv[]){
   INH_OUT_SYN_PARAMS->weight_scaling_constant = weight_multiplier;
   INPUT_SYN_PARAMS->weight_scaling_constant = weight_multiplier;
 
+
   connect_from_mat(
     INHIBITORY_NEURONS[0], EXCITATORY_NEURONS[0],
     INH_OUT_SYN_PARAMS, 
     "../../ie.wmat",
-    BenchModel);
+    BenchModel,
+    timestep);
   connect_from_mat(
     INHIBITORY_NEURONS[0], INHIBITORY_NEURONS[0],
     INH_OUT_SYN_PARAMS, 
     "../../ii.wmat",
-    BenchModel);
+    BenchModel,
+    timestep);
   connect_from_mat(
     EXCITATORY_NEURONS[0], INHIBITORY_NEURONS[0],
     EXC_OUT_SYN_PARAMS, 
     "../../ei.wmat",
-    BenchModel);
+    BenchModel,
+    timestep);
 
   connect_with_sparsity(
       input_layer_ID, EXCITATORY_NEURONS[0],
@@ -287,11 +310,15 @@ int main (int argc, char *argv[]){
 
   if (plastic)
     EXC_OUT_SYN_PARAMS->plasticity_vec.push_back(weightdependent_stdp);
+
+
   int ee_syns = connect_from_mat(
     EXCITATORY_NEURONS[0], EXCITATORY_NEURONS[0],
     EXC_OUT_SYN_PARAMS, 
     "../../ee.wmat",
-    BenchModel);
+    BenchModel,
+    timestep,
+    numsyngroups);
   
   /*
   // Creating Synapse Populations
@@ -362,6 +389,9 @@ int main (int argc, char *argv[]){
   /*
     COMPLETE NETWORK SETUP
   */
+  BenchModel->finalise_model();
+  if (no_TG)
+    BenchModel->timestep_grouping = 1;
 
   clock_t starttime = clock();
   BenchModel->run(simtime);
