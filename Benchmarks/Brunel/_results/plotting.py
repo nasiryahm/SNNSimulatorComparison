@@ -6,10 +6,10 @@ plt.style.use('seaborn-paper')
 simulators = [
         "Spike",
 	"GeNN",
-        "auryn",
+        "Auryn",
         "ANNarchy",
-        "brian2",
-        "Nest",
+        "Brian2",
+        "NEST",
         ]
 
 
@@ -27,15 +27,6 @@ for s in simulators:
         plastic_speedresults.append(float(time) / 100.0)
 
 
-
-simulators = [
-        "Spike",
-	"GeNN",
-        "auryn",
-        "ANNarchy",
-        "brian2",
-        "nest-\nsimulator",
-        ]
 
 # Plotting single timestep results
 fig, ax = plt.subplots()
@@ -61,6 +52,6 @@ ax.yaxis.set_tick_params(labelsize=11)
 ax.set_yscale('log')
 ax.set_ylim([10.0**-2, 10.0**4])
 ax.legend()
-fig.subplots_adjust(bottom=0.2, top=0.975)
+fig.subplots_adjust(bottom=0.175, top=0.975)
 fig.savefig('Brunel_Comparison.png', dpi=300)
 #plt.show()
