@@ -70,6 +70,6 @@ A boolean which will ensure that any spike recording is turned off and the model
 ```
 
 ## Testing ranges of delays:
-Spike, Brian2, and NEST simulator support ranges of delays. ANNarchy informs us that it can handle uniform delays (experimentally) though does not compile in this case.
+Spike, Brian2, and NEST simulator support ranges of delays. 
 
-Auryn and GeNN does not currently support ranges of delays within a single synaptic population.
+ANNarchy informs us that it can handle uniform delays (experimentally) though does not compile in this case. Auryn and GeNN do not currently support ranges of delays within a single synaptic population.
