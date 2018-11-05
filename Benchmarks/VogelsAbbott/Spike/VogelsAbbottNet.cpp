@@ -31,13 +31,16 @@ void connect_from_mat(
     int layer2,
     conductance_spiking_synapse_parameters_struct* SYN_PARAMS, 
     std::string filename,
-    SpikingModel* Model){
+    SpikingModel* Model,
+    float timestep,
+    int numskipgroups=1){
 
   ifstream weightfile;
   string line;
   stringstream ss;
   std::vector<int> prevec, postvec;
   std::vector<float> weightvec;
+  std::vector<float> delayvec;
   int pre, post;
   float weight;
   int linecount = 0;
@@ -58,12 +61,16 @@ void connect_from_mat(
         prevec.push_back(pre - 1);
         postvec.push_back(post - 1);
         weightvec.push_back(weight);
+        delayvec.push_back(SYN_PARAMS->delay_range[0] + (linecount % numskipgroups)*timestep);
+        //printf("%d\n", (linecount % numskipgroups));
+
         //printf("%d, %d, %f\n", pre, post, weight);
       }
     }
     SYN_PARAMS->pairwise_connect_presynaptic = prevec;
     SYN_PARAMS->pairwise_connect_postsynaptic = postvec;
     SYN_PARAMS->pairwise_connect_weight = weightvec;
+    SYN_PARAMS->pairwise_connect_delay = delayvec;
     SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE;
     Model->AddSynapseGroup(layer1, layer2, SYN_PARAMS);
   }
@@ -73,6 +80,8 @@ int main (int argc, char *argv[]){
   // Getting options:
   float simtime = 20.0;
   bool fast = false;
+  bool no_TG = false;
+  int numsyngroups = 1;
   int num_timesteps_min_delay = 1;
   int num_timesteps_max_delay = 1;
   const char* const short_opts = "";
@@ -80,7 +89,9 @@ int main (int argc, char *argv[]){
     {"simtime", 1, nullptr, 0},
     {"fast", 0, nullptr, 1},
     {"num_timesteps_min_delay", 1, nullptr, 2},
-    {"num_timesteps_max_delay", 1, nullptr, 3}
+    {"num_timesteps_max_delay", 1, nullptr, 3},
+    {"num_synapse_groups", 1, nullptr, 5},
+    {"NOTG", 0, nullptr, 4}
   };
   // Check the set of options
   while (true) {
@@ -112,6 +123,14 @@ int main (int argc, char *argv[]){
           exit(1);
         } 
         break;
+      case 4:
+        printf("TURNING OFF TIMESTEP GROUPING\n");
+        no_TG = true;
+        break;
+      case 5:
+        printf("Running with %s synapse groups\n", optarg);
+        numsyngroups = std::stoi(optarg);
+        break;
     }
   };
   
@@ -137,11 +156,11 @@ int main (int argc, char *argv[]){
   lif_spiking_neuron_parameters_struct * EXC_NEURON_PARAMS = new lif_spiking_neuron_parameters_struct();
   lif_spiking_neuron_parameters_struct * INH_NEURON_PARAMS = new lif_spiking_neuron_parameters_struct();
 
-  EXC_NEURON_PARAMS->somatic_capacitance_Cm = 200.0f*pow(10.0, -12);  // pF
-  INH_NEURON_PARAMS->somatic_capacitance_Cm = 200.0f*pow(10.0, -12);  // pF
+  EXC_NEURON_PARAMS->somatic_capacitance_Cm = 20.0f*pow(10.0, -3);//200.0f*pow(10.0, -12);  // pF
+  INH_NEURON_PARAMS->somatic_capacitance_Cm = 20.0f*pow(10.0, -3);//200.0f*pow(10.0, -12);  // pF
 
-  EXC_NEURON_PARAMS->somatic_leakage_conductance_g0 = 10.0f*pow(10.0, -9);  // nS
-  INH_NEURON_PARAMS->somatic_leakage_conductance_g0 = 10.0f*pow(10.0, -9);  // nS
+  EXC_NEURON_PARAMS->somatic_leakage_conductance_g0 = 1.0f;//10.0f*pow(10.0, -9);  // nS
+  INH_NEURON_PARAMS->somatic_leakage_conductance_g0 = 1.0f;//10.0f*pow(10.0, -9);  // nS
 
   EXC_NEURON_PARAMS->resting_potential_v0 = -60.0f*pow(10.0, -3);
   INH_NEURON_PARAMS->resting_potential_v0 = -60.0f*pow(10.0, -3);
@@ -189,8 +208,8 @@ int main (int argc, char *argv[]){
   INH_OUT_SYN_PARAMS->decay_term_tau_g = 10.0f*pow(10.0, -3);  // 10ms
 
   // Biological Scaling factors
-  EXC_OUT_SYN_PARAMS->weight_scaling_constant = 10.0f*pow(10.0,-9);
-  INH_OUT_SYN_PARAMS->weight_scaling_constant = 10.0f*pow(10.0,-9);
+  EXC_OUT_SYN_PARAMS->weight_scaling_constant = EXC_NEURON_PARAMS->somatic_leakage_conductance_g0; //10.0f*pow(10.0,-9);
+  INH_OUT_SYN_PARAMS->weight_scaling_constant = INH_NEURON_PARAMS->somatic_leakage_conductance_g0; // 10.0f*pow(10.0,-9);
   /*
   EXC_OUT_SYN_PARAMS->weight_range[0] = 0.4;
   EXC_OUT_SYN_PARAMS->weight_range[1] = 0.4;
@@ -219,26 +238,44 @@ int main (int argc, char *argv[]){
   */
 
   // Adding connections based upon matrices given
+  /*
+  EXC_OUT_SYN_PARAMS->delay_range[0] = num_timesteps_min_delay*timestep;
+  EXC_OUT_SYN_PARAMS->delay_range[1] = num_timesteps_max_delay*timestep + 3*timestep;
   connect_from_mat(
     EXCITATORY_NEURONS[0], EXCITATORY_NEURONS[0],
     EXC_OUT_SYN_PARAMS, 
     "../../ee.wmat",
-    BenchModel);
+    BenchModel,
+    0, 3200);
+  EXC_OUT_SYN_PARAMS->delay_range[0] = num_timesteps_min_delay*timestep;
+  EXC_OUT_SYN_PARAMS->delay_range[1] = num_timesteps_max_delay*timestep;
+  */
+  connect_from_mat(
+      EXCITATORY_NEURONS[0], EXCITATORY_NEURONS[0],
+      EXC_OUT_SYN_PARAMS, 
+      "../../ee.wmat",
+      BenchModel,
+      timestep,
+      numsyngroups);
+
   connect_from_mat(
     EXCITATORY_NEURONS[0], INHIBITORY_NEURONS[0],
     EXC_OUT_SYN_PARAMS, 
     "../../ei.wmat",
-    BenchModel);
+    BenchModel,
+    timestep);
   connect_from_mat(
     INHIBITORY_NEURONS[0], EXCITATORY_NEURONS[0],
     INH_OUT_SYN_PARAMS, 
     "../../ie.wmat",
-    BenchModel);
+    BenchModel,
+    timestep);
   connect_from_mat(
     INHIBITORY_NEURONS[0], INHIBITORY_NEURONS[0],
     INH_OUT_SYN_PARAMS, 
     "../../ii.wmat",
-    BenchModel);
+    BenchModel,
+    timestep);
 
 
 
@@ -247,6 +284,8 @@ int main (int argc, char *argv[]){
     COMPLETE NETWORK SETUP
   */
   BenchModel->finalise_model();
+  if (no_TG)
+    BenchModel->timestep_grouping = 1;
 
   clock_t starttime = clock();
   BenchModel->run(simtime);

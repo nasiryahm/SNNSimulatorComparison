@@ -18,7 +18,8 @@ include_directories(BEFORE SYSTEM "../../../Simulators/Spike")
 
 # Add List of Executables
 foreach(model
-	VogelsAbbottNet
+  VogelsAbbottNet
+  milliVA
     )
   add_executable(${model} ${model}.cpp)
   target_link_libraries(${model} Spike

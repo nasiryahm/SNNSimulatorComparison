@@ -5,6 +5,7 @@ plt.style.use('seaborn-paper')
 
 simulators = [
         "Spike",
+	"GeNN",
         "auryn",
         "ANNarchy",
         "brian2",
@@ -27,10 +28,18 @@ for s in simulators:
 
 
 
+simulators = [
+        "Spike",
+	"GeNN",
+        "auryn",
+        "ANNarchy",
+        "brian2",
+        "nest-\nsimulator",
+        ]
 
 # Plotting single timestep results
 fig, ax = plt.subplots()
-ax.set_title("Comparison Simulator with the Brunel Benchmark", size=12)
+#ax.set_title("Comparison Simulator with the Brunel Benchmark", size=12)
 #tick_label=simulators,
 barwidth = 0.4
 ax.bar(
@@ -45,11 +54,13 @@ ax.bar(
         align='center', color='r', label="Plasticity ON")
 
 ax.set_xticks(np.arange(len(simulators)))
-ax.set_xticklabels(simulators)
-ax.set_xlabel("Simulator", size=12)
+ax.set_xticklabels(simulators, fontsize=12, rotation=-45)
+#ax.set_xlabel("Simulator", size=12)
 ax.set_ylabel("Simulation Run Time (Normalized)", size=12)
+ax.yaxis.set_tick_params(labelsize=11)
 ax.set_yscale('log')
 ax.set_ylim([10.0**-2, 10.0**4])
 ax.legend()
+fig.subplots_adjust(bottom=0.2, top=0.975)
 fig.savefig('Brunel_Comparison.png', dpi=300)
 #plt.show()

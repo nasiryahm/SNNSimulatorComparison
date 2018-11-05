@@ -8,7 +8,7 @@ simulators = [
         "auryn",
         "ANNarchy",
         "brian2",
-        "Nest",
+        "nest-simulator",
         ]
 
 single_timestep_delay_results = []
@@ -36,24 +36,37 @@ ax.bar(
         single_timestep_delay_results,
         tick_label=simulators,
         align='center', color='k')
-ax.set_xlabel("Simulator")
+ax.set_xticklabels(simulators, fontsize=12, rotation=-45)
+ax.yaxis.set_tick_params(labelsize=10)
+#ax.set_xlabel("Simulator")
 ax.set_ylabel("Simulation Run Time (Normalized)")
-ax.set_ylim([10.0**-2, 10.0**2])
+#ax.set_ylim([10.0**-2, 10.0**2])
 ax.set_yscale('log')
 fig.savefig('single_delay_comparison.png')
 #plt.show()
 
+simulators = [
+        "Spike",
+        "GeNN",
+        "auryn",
+        "ANNarchy",
+        "brian2",
+        "nest-\nsimulator",
+        ]
 
 fig, ax = plt.subplots()
-ax.set_title("Comparing Simulators with the Vogels-Abbott Benchmark", size=12)
+#ax.set_title("Comparing Simulators with the Vogels-Abbott Benchmark", size=12)
 ax.bar(
         range(len(simulators)),
         eight_timestep_delay_results,
         tick_label=simulators,
         align='center', color='k')
-ax.set_xlabel("Simulator", size=12)
-ax.set_ylabel("Normalized Simulation Run Time\n(Shorter is faster)", size=12)
-ax.set_ylim([10.0**-2, 10.0**2])
+ax.set_xticklabels(simulators, fontsize=12, rotation=-45)
+ax.yaxis.set_tick_params(labelsize=9)
+#ax.set_xlabel("Simulator", size=12)
+ax.set_ylabel("Simulation Run Time (Normalized)", size=12)
+#ax.set_ylim([10.0**-2, 10.0**2])
 ax.set_yscale('log')
+fig.subplots_adjust(bottom=0.2, top=0.975)
 fig.savefig('eight_delay_comparison.png', dpi=300)
 #plt.show()
