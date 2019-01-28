@@ -5,10 +5,10 @@ plt.style.use('seaborn-paper')
 
 simulators = [
         "Spike",
-	"GeNN",
+        "GeNN",
         "Auryn",
-        "ANNarchy",
         "Brian2",
+        "ANNarchy",
         "NEST",
         ]
 

@@ -47,7 +47,7 @@ for o, a in optlist:
 from brian2 import *
 from scipy.io import mmread
 
-# Unable to run standalone mode due to weight loading
+# Setting standalone mode for speed
 set_device('cpp_standalone')
 
 mytimestep=0.1

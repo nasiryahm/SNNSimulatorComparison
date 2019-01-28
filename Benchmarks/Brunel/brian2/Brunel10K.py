@@ -27,6 +27,11 @@ record = False
 if (not fast):
     record = True
 
+# Setting standalone mode for speed
+set_device('cpp_standalone')
+mytimestep=0.1
+defaultclock.dt = mytimestep*ms
+
 # ###########################################
 # Network parameters
 # ###########################################
@@ -89,41 +94,41 @@ ie_mat = mmread('../ie.wmat')
 ii_mat = mmread('../ii.wmat')
 # EE
 if (plastic):
-    ee = Synapses(Pe, Pe, model=model, on_pre=pre_spike, on_post=post_spike)
+    ee = Synapses(Pe, Pe, model=model, on_pre=pre_spike, on_post=post_spike, method='euler')
     ee.connect(i=ee_mat.row, j=ee_mat.col)
     # ee.connect(i=np.random.randint(NE, size=(NE*(NE/10))), j=np.repeat(np.arange(NE), (NE/10)))
-    ee.w[:,:]='J_ex'
+    ee.w = J_ex
     ee.delay = delay
 else:
-    ee = Synapses(Pe, Pe, model='w:1', on_pre='v+=w')
+    ee = Synapses(Pe, Pe, model='w:1', on_pre='v+=w', method='euler')
     ee.connect(i=ee_mat.row, j=ee_mat.col)
     # ee.connect(i=np.random.randint(NE, size=(NE*(NE/10))), j=np.repeat(np.arange(NE), (NE/10)))
-    ee.w[:,:]='J_ex'
+    ee.w = J_ex
     ee.delay = delay
     
 # EI
-ei = Synapses(Pe, Pi, model='w:1',on_pre='v+=w')
+ei = Synapses(Pe, Pi, model='w:1',on_pre='v+=w', method='euler')
 # ei.connect(i=np.random.randint(NE, size=(NI*(NE/10))), j=np.repeat(np.arange(NI), (NE/10)))
 ei.connect(i=ei_mat.row, j=ei_mat.col)
-ei.w[:,:]='J_ex'
+ei.w= J_ex
 ei.delay = delay
 
 # II
-ii = Synapses(Pi, Pi, model='w:1',on_pre='v+=w')
+ii = Synapses(Pi, Pi, model='w:1',on_pre='v+=w', method='euler')
 ii.connect(i=ii_mat.row, j=ii_mat.col)
 # ii.connect(i=np.random.randint(NI, size=((NE+NI)*(NI/10))), j=np.repeat(np.arange(NE+NI), (NI/10)))
 ii.w = J_in
 ii.delay = delay
 
 # IE
-ie = Synapses(Pi, Pe, model='w:1',on_pre='v+=w')
+ie = Synapses(Pi, Pe, model='w:1',on_pre='v+=w', method='euler')
 ie.connect(i=ie_mat.row, j=ie_mat.col)
 # ii.connect(i=np.random.randint(NI, size=((NE+NI)*(NI/10))), j=np.repeat(np.arange(NE+NI), (NI/10)))
 ie.w = J_in
 ie.delay = delay
 
 # External Input
-noise = Synapses(poisson, P, model='w:1',on_pre='v+=w')
+noise = Synapses(poisson, P, model='w:1',on_pre='v+=w', method='euler')
 noise.connect(i=np.random.randint((NE+NI), size=((NE+NI)*((NE+NI)/10))), j=np.repeat(np.arange(NE+NI), ((NE+NI)/10)))
 noise.w = J_ex
 noise.delay = delay
@@ -138,11 +143,9 @@ if record:
 # ###########################################
 # Simulation
 # ###########################################
-run(0*second)
 print 'Start simulation'
-starttime = timeit.default_timer()
-run(simtime)
-totaltime = timeit.default_timer() - starttime
+run(simtime, profile=True)
+totaltime = device._last_run_time
 print('Simulation took ' + str(totaltime) + 's')
 
 if (fast):
