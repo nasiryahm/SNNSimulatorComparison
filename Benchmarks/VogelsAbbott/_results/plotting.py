@@ -6,8 +6,8 @@ simulators = [
         "Spike",
         "GeNN",
         "Auryn",
-        "ANNarchy",
         "Brian2",
+        "ANNarchy",
         "NEST",
         ]
 

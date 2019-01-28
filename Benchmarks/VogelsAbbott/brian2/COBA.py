@@ -48,7 +48,7 @@ from brian2 import *
 from scipy.io import mmread
 
 # Unable to run standalone mode due to weight loading
-# set_device('cpp_standalone')
+set_device('cpp_standalone')
 
 mytimestep=0.1
 defaultclock.dt = mytimestep*ms
@@ -97,19 +97,19 @@ ie_mat = mmread('../ie.wmat')
 ii_mat = mmread('../ii.wmat')
 
 conn_ee.connect(i=ee_mat.row, j=ee_mat.col)
-conn_ee.w[:,:]=we
+conn_ee.w=we
 conn_ee.delay = num_timesteps_min_delay*mytimestep*ms
 
 conn_ei.connect(i=ei_mat.row, j=ei_mat.col)
-conn_ei.w[:,:]=we
+conn_ei.w=we
 conn_ei.delay = num_timesteps_min_delay*mytimestep*ms
 
 conn_ie.connect(i=ie_mat.row, j=ie_mat.col)
-conn_ie.w[:,:]=wi
+conn_ie.w=wi
 conn_ie.delay = num_timesteps_min_delay*mytimestep*ms
 
 conn_ii.connect(i=ii_mat.row, j=ii_mat.col)
-conn_ii.w[:,:]=wi
+conn_ii.w=wi
 conn_ii.delay = num_timesteps_min_delay*mytimestep*ms
 
 if (num_timesteps_min_delay != num_timesteps_max_delay):
@@ -124,24 +124,19 @@ if (num_timesteps_min_delay != num_timesteps_max_delay):
 #conn_ie.connect(Pi, Pe, scale*array(mmread('../pynn.ie.wmat').todense(),dtype=float))
 #conn_ii.connect(Pi, Pi, scale*array(mmread('../pynn.ii.wmat').todense(),dtype=float))
 
-# Initial run to get rid of any time in setup
-run(0*second)
-
 
 print("Simulating for " + str(simtime) + "s")
 if (fast):
-    starttime = timeit.default_timer()
-    run(simtime * second)
-    totaltime = timeit.default_timer() - starttime
+    run(simtime * second, profile=True)
+    totaltime = device._last_run_time
     f = open("timefile.dat", "w")
     f.write("%f" % totaltime)
     f.close()
     print("Real Time Sim: " + str(totaltime) + "s")
 else:
     s_mon = SpikeMonitor(P)
-    starttime = timeit.default_timer()
-    run(simtime * second)
-    totaltime = timeit.default_timer() - starttime
+    run(simtime * second, profile=True)
+    totaltime = device._last_run_time
     print("Mean Network Firing Rate: " + str(len(s_mon.i) / (4000.0*simtime)) + "Hz")
     print("Real Time Sim: " + str(totaltime) + "s")
     indices = np.asarray(s_mon.i)
