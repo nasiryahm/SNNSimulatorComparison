@@ -1,5 +1,6 @@
 # SNNSimulatorComparison
-Comparison of Spiking Neural Network Simulator Performance
+Comparison of Spiking Neural Network Simulator Performance. See our pre-print presenting these results in detail;
+[Spike: A GPU Optimised Spiking Neural Network Simulator](https://www.biorxiv.org/content/early/2018/11/06/461160)
 
 Simulators are included as git submodules.
 Currently the simulators being compared are:
