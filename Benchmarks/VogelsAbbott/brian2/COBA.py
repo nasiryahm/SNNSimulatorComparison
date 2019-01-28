@@ -47,10 +47,11 @@ for o, a in optlist:
 from brian2 import *
 from scipy.io import mmread
 
-set_device('cpp_standalone')
+# Unable to run standalone mode due to weight loading
+# set_device('cpp_standalone')
 
-timestep=0.1
-defaultclock.dt = timestep*ms
+mytimestep=0.1
+defaultclock.dt = mytimestep*ms
 
 NE = 3200
 NI = NE/4
@@ -97,22 +98,22 @@ ii_mat = mmread('../ii.wmat')
 
 conn_ee.connect(i=ee_mat.row, j=ee_mat.col)
 conn_ee.w[:,:]=we
-conn_ee.delay = num_timesteps_min_delay*timestep*ms
+conn_ee.delay = num_timesteps_min_delay*mytimestep*ms
 
 conn_ei.connect(i=ei_mat.row, j=ei_mat.col)
 conn_ei.w[:,:]=we
-conn_ei.delay = num_timesteps_min_delay*timestep*ms
+conn_ei.delay = num_timesteps_min_delay*mytimestep*ms
 
 conn_ie.connect(i=ie_mat.row, j=ie_mat.col)
 conn_ie.w[:,:]=wi
-conn_ie.delay = num_timesteps_min_delay*timestep*ms
+conn_ie.delay = num_timesteps_min_delay*mytimestep*ms
 
 conn_ii.connect(i=ii_mat.row, j=ii_mat.col)
 conn_ii.w[:,:]=wi
-conn_ii.delay = num_timesteps_min_delay*timestep*ms
+conn_ii.delay = num_timesteps_min_delay*mytimestep*ms
 
 if (num_timesteps_min_delay != num_timesteps_max_delay):
-    delaysetup = str(num_timesteps_min_delay*timestep) + "*ms + " + str((num_timesteps_max_delay - num_timesteps_min_delay)*timestep) + "*ms*rand()"
+    delaysetup = str(num_timesteps_min_delay*timestep) + "*ms + " + str((num_timesteps_max_delay - num_timesteps_min_delay)*mytimestep) + "*ms*rand()"
     conn_ee.delay = delaysetup
     conn_ei.delay = delaysetup
     conn_ie.delay = delaysetup

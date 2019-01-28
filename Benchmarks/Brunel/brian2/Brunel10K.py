@@ -138,6 +138,7 @@ if record:
 # ###########################################
 # Simulation
 # ###########################################
+run(0*second)
 print 'Start simulation'
 starttime = timeit.default_timer()
 run(simtime)
