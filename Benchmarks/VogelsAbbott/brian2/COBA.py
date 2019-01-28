@@ -11,8 +11,8 @@ Journal of Computational Neuroscience 23(3):349-98
 Benchmark 2: random network of integrate-and-fire neurons with exponential
 synaptic currents.
 
-Clock-driven implementation with exact subthreshold integration
-(but spike times are aligned to the grid).
+Adapted by Nasir Ahmad for the SNNSimulatorComparison Repository (https://github.com/nasiryahm/SNNSimulatorComparison)
+
 '''
 import getopt, sys, timeit
 try:
@@ -46,6 +46,8 @@ for o, a in optlist:
 
 from brian2 import *
 from scipy.io import mmread
+
+set_device('cpp_standalone')
 
 timestep=0.1
 defaultclock.dt = timestep*ms
@@ -120,6 +122,9 @@ if (num_timesteps_min_delay != num_timesteps_max_delay):
 #conn_ei.connect(Pe, Pi, scale*array(mmread('../pynn.ei.wmat').todense(),dtype=float))
 #conn_ie.connect(Pi, Pe, scale*array(mmread('../pynn.ie.wmat').todense(),dtype=float))
 #conn_ii.connect(Pi, Pi, scale*array(mmread('../pynn.ii.wmat').todense(),dtype=float))
+
+# Initial run to get rid of any time in setup
+run(0*second)
 
 
 print("Simulating for " + str(simtime) + "s")
