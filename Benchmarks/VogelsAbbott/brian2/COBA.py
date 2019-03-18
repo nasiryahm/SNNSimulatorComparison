@@ -16,15 +16,14 @@ Adapted by Nasir Ahmad for the SNNSimulatorComparison Repository (https://github
 '''
 import getopt, sys, timeit
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], '', ['fast', 'simtime=', 'num_timesteps_min_delay=', 'num_timesteps_max_delay='])
+    optlist, args = getopt.getopt(sys.argv[1:], '', ['fast', 'simtime=', 'num_timesteps_delay='])
 except getopt.GetoptError as err:
     print(str(err))
     sys.exit(2)
 
 simtime = 1.0
 fast = False
-num_timesteps_min_delay = 1
-num_timesteps_max_delay = 1
+num_timesteps_delay = 1
 for o, a in optlist:
     if (o == "--fast"):
         fast = True
@@ -32,17 +31,9 @@ for o, a in optlist:
     elif (o == "--simtime"):
         simtime=float(a)
         print("Simulation Time: " + a)
-    elif (o == "--num_timesteps_min_delay"):
-        num_timesteps_min_delay=int(a)
-        if (num_timesteps_max_delay < num_timesteps_min_delay):
-            num_timesteps_max_delay = num_timesteps_min_delay
-        print("Minimum delay (in number of timesteps): " + a)
-    elif (o == "--num_timesteps_max_delay"):
-        num_timesteps_max_delay=int(a)
-        if (num_timesteps_max_delay < num_timesteps_min_delay):
-            print("ERROR: Max delay should not be smaller than min!")
-            exit(1)
-        print("Maximum delay (in number of timesteps): " + a)
+    elif (o == "--num_timesteps_delay"):
+        num_timesteps_delay=int(a)
+        print("Delay (in number of timesteps): " + a)
 
 from brian2 import *
 from scipy.io import mmread
@@ -98,27 +89,19 @@ ii_mat = mmread('../ii.wmat')
 
 conn_ee.connect(i=ee_mat.row, j=ee_mat.col)
 conn_ee.w=we
-conn_ee.delay = num_timesteps_min_delay*mytimestep*ms
+conn_ee.delay = num_timesteps_delay*mytimestep*ms
 
 conn_ei.connect(i=ei_mat.row, j=ei_mat.col)
 conn_ei.w=we
-conn_ei.delay = num_timesteps_min_delay*mytimestep*ms
+conn_ei.delay = num_timesteps_delay*mytimestep*ms
 
 conn_ie.connect(i=ie_mat.row, j=ie_mat.col)
 conn_ie.w=wi
-conn_ie.delay = num_timesteps_min_delay*mytimestep*ms
+conn_ie.delay = num_timesteps_delay*mytimestep*ms
 
 conn_ii.connect(i=ii_mat.row, j=ii_mat.col)
 conn_ii.w=wi
-conn_ii.delay = num_timesteps_min_delay*mytimestep*ms
-
-if (num_timesteps_min_delay != num_timesteps_max_delay):
-    delaysetup = str(num_timesteps_min_delay*timestep) + "*ms + " + str((num_timesteps_max_delay - num_timesteps_min_delay)*mytimestep) + "*ms*rand()"
-    conn_ee.delay = delaysetup
-    conn_ei.delay = delaysetup
-    conn_ie.delay = delaysetup
-    conn_ii.delay = delaysetup
-
+conn_ii.delay = num_timesteps_delay*mytimestep*ms
 
 #conn_ei.connect(Pe, Pi, scale*array(mmread('../pynn.ei.wmat').todense(),dtype=float))
 #conn_ie.connect(Pi, Pe, scale*array(mmread('../pynn.ie.wmat').todense(),dtype=float))

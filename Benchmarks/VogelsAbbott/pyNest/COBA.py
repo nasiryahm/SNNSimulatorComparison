@@ -2,7 +2,7 @@
 
 import getopt, sys, timeit
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], '', ['fast', 'simtime=', 'num_timesteps_min_delay=', 'num_timesteps_max_delay='])
+    optlist, args = getopt.getopt(sys.argv[1:], '', ['fast', 'simtime=', 'num_timesteps_delay='])
 except getopt.GetoptError as err:
     print(str(err))
     sys.exit(2)
@@ -19,6 +19,7 @@ for o, a in optlist:
         print("Simulation Time: " + a)
     elif (o == "--num_timesteps_delay"):
         num_timesteps_delay=int(a)
+        print("Delay (in number of timesteps): " + a)
 
 import nest
 import numpy

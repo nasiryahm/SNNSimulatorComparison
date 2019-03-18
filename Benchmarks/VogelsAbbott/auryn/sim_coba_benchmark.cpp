@@ -39,6 +39,8 @@
  *
  * */
 
+// This file is re-used by the SNNSimulatorComparison Repository for benchmarking
+
 #include "auryn.h"
 #include <fstream>
 #include <time.h>       /* clock_t, clock, CLOCKS_PER_SEC */
@@ -49,34 +51,33 @@ using namespace auryn;
 namespace po = boost::program_options;
 
 int main(int ac,char *av[]) {
-	string dir = "/tmp";
+  string dir = "/tmp";
 
-	string fwmat_ee = "../ee.wmat";
-	string fwmat_ei = "../ei.wmat";
-	string fwmat_ie = "../ie.wmat";
-	string fwmat_ii = "../ii.wmat";
+  string fwmat_ee = "../ee.wmat";
+  string fwmat_ei = "../ei.wmat";
+  string fwmat_ie = "../ie.wmat";
+  string fwmat_ii = "../ii.wmat";
 
-	std::stringstream oss;
-	string strbuf ;
-	string msg;
+  std::stringstream oss;
+  string strbuf ;
+  string msg;
 
-	double w = 0.4; // [g_leak]
-	double wi = 5.1; // [g_leak]
+  double w = 0.4; // [g_leak]
+  double wi = 5.1; // [g_leak]
 
 
 
-	double sparseness = 0.02;
-	double simtime = 20.;
+  double sparseness = 0.02;
+  double simtime = 20.;
 
-	NeuronID ne = 3200;
-	NeuronID ni = 800;
+  NeuronID ne = 3200;
+  NeuronID ni = 800;
 
-	bool fast = false;
+  bool fast = false;
 
-	int num_timesteps_min_delay = 1;
-	int num_timesteps_max_delay = 1;
+  int num_timesteps_delay = 1;
 
-	int errcode = 0;
+  int errcode = 0;
 
 
     try {
@@ -85,8 +86,7 @@ int main(int ac,char *av[]) {
         desc.add_options()
             ("help", "produce help message")
             ("simtime", po::value<double>(), "simulation time")
-            ("num_timesteps_min_delay", po::value<int>(), "the number of timesteps per minimum delay")
-            ("num_timesteps_max_delay", po::value<int>(), "the number of timesteps per minimum delay")
+            ("num_timesteps_delay", po::value<int>(), "the number of timesteps of synaptic delay")
             ("fast", "turns off most monitoring to reduce IO")
             ("dir", po::value<string>(), "load/save directory")
             ("fee", po::value<string>(), "file with EE connections")
@@ -105,41 +105,35 @@ int main(int ac,char *av[]) {
         }
 
         if (vm.count("simtime")) {
-			simtime = vm["simtime"].as<double>();
+          simtime = vm["simtime"].as<double>();
         } 
         
-	if (vm.count("num_timesteps_min_delay")) {
-			num_timesteps_min_delay = vm["num_timesteps_min_delay"].as<int>();
-			if (num_timesteps_max_delay < num_timesteps_min_delay)
-				num_timesteps_max_delay = num_timesteps_min_delay;
-        } 
-	
-	if (vm.count("num_timesteps_max_delay")) {
-			num_timesteps_min_delay = vm["num_timesteps_max_delay"].as<int>();
+        if (vm.count("num_timesteps_delay")) {
+          num_timesteps_delay = vm["num_timesteps_delay"].as<int>();
         } 
 
         if (vm.count("fast")) {
-			fast = true;
+          fast = true;
         } 
 
         if (vm.count("dir")) {
-			dir = vm["dir"].as<string>();
+          dir = vm["dir"].as<string>();
         } 
 
         if (vm.count("fee")) {
-			fwmat_ee = vm["fee"].as<string>();
+          fwmat_ee = vm["fee"].as<string>();
         } 
 
         if (vm.count("fie")) {
-			fwmat_ie = vm["fie"].as<string>();
+          fwmat_ie = vm["fie"].as<string>();
         } 
 
         if (vm.count("fei")) {
-			fwmat_ei = vm["fei"].as<string>();
+          fwmat_ei = vm["fei"].as<string>();
         } 
 
         if (vm.count("fii")) {
-			fwmat_ii = vm["fii"].as<string>();
+          fwmat_ii = vm["fii"].as<string>();
         } 
 
     }
@@ -151,105 +145,100 @@ int main(int ac,char *av[]) {
         std::cerr << "Exception of unknown type!\n";
     }
 
-    if (num_timesteps_min_delay != num_timesteps_max_delay){
-    	std::cerr << "Error: Cannot use a range of delays with auryn."; 
-	return 1;
-    }
+
+  auryn_init( ac, av, dir );
+  oss << dir  << "/coba." << sys->mpi_rank() << ".";
+  string outputfile = oss.str();
+  if ( fast ) sys->quiet = true;
 
 
-	auryn_init( ac, av, dir );
-	oss << dir  << "/coba." << sys->mpi_rank() << ".";
-	string outputfile = oss.str();
-	if ( fast ) sys->quiet = true;
+  logger->msg("Setting up neuron groups ...",PROGRESS,true);
+
+  TIFGroup * neurons_e = new TIFGroup( ne);
+  TIFGroup * neurons_i = new TIFGroup( ni);
+  
+  neurons_e->set_delay(num_timesteps_delay);
+  neurons_i->set_delay(num_timesteps_delay);
+
+  neurons_e->set_refractory_period(5.0e-3); // minimal ISI 5.1ms
+  neurons_i->set_refractory_period(5.0e-3);
+
+  neurons_e->set_state("bg_current",2e-2); // corresponding to 200pF for C=200pF and tau=20ms
+  neurons_i->set_state("bg_current",2e-2);
 
 
-	logger->msg("Setting up neuron groups ...",PROGRESS,true);
+  logger->msg("Setting up E connections ...",PROGRESS,true);
 
-	TIFGroup * neurons_e = new TIFGroup( ne);
-	TIFGroup * neurons_i = new TIFGroup( ni);
-	
-	neurons_e->set_delay(num_timesteps_min_delay);
-	neurons_i->set_delay(num_timesteps_min_delay);
+  SparseConnection * con_ee 
+    = new SparseConnection( neurons_e,neurons_e, w, sparseness, GLUT);
 
-	neurons_e->set_refractory_period(5.0e-3); // minimal ISI 5.1ms
-	neurons_i->set_refractory_period(5.0e-3);
-
-	neurons_e->set_state("bg_current",2e-2); // corresponding to 200pF for C=200pF and tau=20ms
-	neurons_i->set_state("bg_current",2e-2);
-
-
-	logger->msg("Setting up E connections ...",PROGRESS,true);
-
-	SparseConnection * con_ee 
-		= new SparseConnection( neurons_e,neurons_e, w, sparseness, GLUT);
-
-	SparseConnection * con_ei 
-		= new SparseConnection( neurons_e,neurons_i, w,sparseness,GLUT);
+  SparseConnection * con_ei 
+    = new SparseConnection( neurons_e,neurons_i, w,sparseness,GLUT);
 
 
 
-	logger->msg("Setting up I connections ...",PROGRESS,true);
-	SparseConnection * con_ie 
-		= new SparseConnection( neurons_i,neurons_e,wi,sparseness,GABA);
+  logger->msg("Setting up I connections ...",PROGRESS,true);
+  SparseConnection * con_ie 
+    = new SparseConnection( neurons_i,neurons_e,wi,sparseness,GABA);
 
-	SparseConnection * con_ii 
-		= new SparseConnection( neurons_i,neurons_i,wi,sparseness,GABA);
+  SparseConnection * con_ii 
+    = new SparseConnection( neurons_i,neurons_i,wi,sparseness,GABA);
 
-	if ( !fwmat_ee.empty() ) std::cout << "Loading connectivity from file." << std::endl;
-	if ( !fwmat_ee.empty() ) con_ee->load_from_complete_file(fwmat_ee);
-	if ( !fwmat_ei.empty() ) con_ei->load_from_complete_file(fwmat_ei);
-	if ( !fwmat_ie.empty() ) con_ie->load_from_complete_file(fwmat_ie);
-	if ( !fwmat_ii.empty() ) con_ii->load_from_complete_file(fwmat_ii);
-
-
-
-	if ( !fast ) {
-		logger->msg("Use --fast option to turn off IO for benchmarking!", WARNING);
-
-		msg = "Setting up monitors ...";
-		logger->msg(msg,PROGRESS,true);
-
-		std::stringstream filename;
-		filename << outputfile << "e.ras";
-		SpikeMonitor * smon_e = new SpikeMonitor( neurons_e, filename.str().c_str() );
-
-		filename.str("");
-		filename.clear();
-		filename << outputfile << "i.ras";
-		SpikeMonitor * smon_i = new SpikeMonitor( neurons_i, filename.str().c_str() );
-	}
+  if ( !fwmat_ee.empty() ) std::cout << "Loading connectivity from file." << std::endl;
+  if ( !fwmat_ee.empty() ) con_ee->load_from_complete_file(fwmat_ee);
+  if ( !fwmat_ei.empty() ) con_ei->load_from_complete_file(fwmat_ei);
+  if ( !fwmat_ie.empty() ) con_ie->load_from_complete_file(fwmat_ie);
+  if ( !fwmat_ii.empty() ) con_ii->load_from_complete_file(fwmat_ii);
 
 
-	// RateChecker * chk = new RateChecker( neurons_e , -0.1 , 1000. , 100e-3);
-	//printf("Auryn timestep: %f", sys->auryn_timestep);
-	
-	logger->msg("Simulating ..." ,PROGRESS,true);
-	clock_t starttime = clock();
-	if (!sys->run(simtime,true)) 
-			errcode = 1;
-	clock_t totaltime = clock() - starttime;
 
-	if ( fast ){
-		std::ofstream timefile;
-		timefile.open("timefile.dat");
-		timefile << std::setprecision(10) << ((float)totaltime / CLOCKS_PER_SEC);
-		timefile.close();
-	}
+  if ( !fast ) {
+    logger->msg("Use --fast option to turn off IO for benchmarking!", WARNING);
 
-	if ( sys->mpi_rank() == 0 ) {
-		logger->msg("Saving elapsed time ..." ,PROGRESS,true);
-		char filenamebuf [255];
-		sprintf(filenamebuf, "%s/elapsed.dat", dir.c_str());
-		std::ofstream timefile;
-		timefile.open(filenamebuf);
-		timefile << sys->get_last_elapsed_time() << std::endl;
-		timefile.close();
-	}
+    msg = "Setting up monitors ...";
+    logger->msg(msg,PROGRESS,true);
 
-	if (errcode)
-		auryn_abort(errcode);
+    std::stringstream filename;
+    filename << outputfile << "e.ras";
+    SpikeMonitor * smon_e = new SpikeMonitor( neurons_e, filename.str().c_str() );
 
-	logger->msg("Freeing ..." ,PROGRESS,true);
-	auryn_free();
-	return errcode;
+    filename.str("");
+    filename.clear();
+    filename << outputfile << "i.ras";
+    SpikeMonitor * smon_i = new SpikeMonitor( neurons_i, filename.str().c_str() );
+  }
+
+
+  // RateChecker * chk = new RateChecker( neurons_e , -0.1 , 1000. , 100e-3);
+  //printf("Auryn timestep: %f", sys->auryn_timestep);
+  
+  logger->msg("Simulating ..." ,PROGRESS,true);
+  clock_t starttime = clock();
+  if (!sys->run(simtime,true)) 
+      errcode = 1;
+  clock_t totaltime = clock() - starttime;
+
+  if ( fast ){
+    std::ofstream timefile;
+    timefile.open("timefile.dat");
+    timefile << std::setprecision(10) << ((float)totaltime / CLOCKS_PER_SEC);
+    timefile.close();
+  }
+
+  if ( sys->mpi_rank() == 0 ) {
+    logger->msg("Saving elapsed time ..." ,PROGRESS,true);
+    char filenamebuf [255];
+    sprintf(filenamebuf, "%s/elapsed.dat", dir.c_str());
+    std::ofstream timefile;
+    timefile.open(filenamebuf);
+    timefile << sys->get_last_elapsed_time() << std::endl;
+    timefile.close();
+  }
+
+  if (errcode)
+    auryn_abort(errcode);
+
+  logger->msg("Freeing ..." ,PROGRESS,true);
+  auryn_free();
+  return errcode;
 }

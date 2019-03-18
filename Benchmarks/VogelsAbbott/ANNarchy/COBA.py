@@ -1,14 +1,13 @@
 import getopt, sys, timeit
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], '', ['fast', 'simtime=', 'num_timesteps_min_delay=', 'num_timesteps_max_delay='])
+    optlist, args = getopt.getopt(sys.argv[1:], '', ['fast', 'simtime=', 'num_timesteps_delay='])
 except getopt.GetoptError as err:
     print(str(err))
     sys.exit(2)
 
 simtime = 1.0
 fast = False
-num_timesteps_min_delay = 1
-num_timesteps_max_delay = 1
+num_timesteps_delay = 1
 for o, a in optlist:
     if (o == "--fast"):
         fast = True
@@ -16,17 +15,9 @@ for o, a in optlist:
     elif (o == "--simtime"):
         simtime=float(a)
         print("Simulation Time: " + a)
-    elif (o == "--num_timesteps_min_delay"):
-        num_timesteps_min_delay=int(a)
-        if (num_timesteps_max_delay < num_timesteps_min_delay):
-            num_timesteps_max_delay = num_timesteps_min_delay
-        print("Minimum delay (in number of timesteps): " + a)
-    elif (o == "--num_timesteps_max_delay"):
-        num_timesteps_max_delay=int(a)
-        if (num_timesteps_max_delay < num_timesteps_min_delay):
-            print("ERROR: Max delay should not be smaller than min!")
-            exit(1)
-        print("Maximum delay (in number of timesteps): " + a)
+    elif (o == "--num_timesteps_delay"):
+        num_timesteps_delay=int(a)
+        print("Delay (in number of timesteps): " + a)
 
 
 from ANNarchy import *
@@ -74,9 +65,7 @@ P.g_inh = 0.0#Normal(20.0, 12.0)
 # ###########################################
 gleak = 1.0; #1000.0 * (500.0*pow(10.0, -12.0) / 0.02)
 
-delayval = num_timesteps_min_delay*timestep
-if (num_timesteps_min_delay != num_timesteps_max_delay):
-    delayval = Uniform(num_timesteps_min_delay*timestep, num_timesteps_max_delay*timestep)
+delayval = num_timesteps_delay*timestep
 
 
 
