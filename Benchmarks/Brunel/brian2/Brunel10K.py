@@ -82,12 +82,22 @@ Pe = P[:NE]
 Pi = P[NE:]
 P.v = 0.
 
-poisson = PoissonGroup(NE+NI, rates=p_rate)
+poisson = PoissonInput(P, 'v', 1000, p_rate, weight=J_ex)
+# Without the PoissonInput class, Poisson neurons like the below are necessary
+#poisson = PoissonGroup(NE+NI, rates=p_rate)
 
 # ###########################################
 # Projections
 # ###########################################
 print("Creating Projections")
+
+# External Input from Modelled Poisson Neurons
+#noise = Synapses(poisson, P, model='w:1',on_pre='v+=w', method='euler')
+#noise.connect(i=np.random.randint((NE+NI), size=((NE+NI)*((NE+NI)/10))), j=np.repeat(np.arange(NE+NI), ((NE+NI)/10)))
+#noise.w = J_ex
+#noise.delay = delay
+
+
 ee_mat = mmread('../ee.wmat')
 ei_mat = mmread('../ei.wmat')
 ie_mat = mmread('../ie.wmat')
@@ -126,12 +136,6 @@ ie.connect(i=ie_mat.row, j=ie_mat.col)
 # ii.connect(i=np.random.randint(NI, size=((NE+NI)*(NI/10))), j=np.repeat(np.arange(NE+NI), (NI/10)))
 ie.w = J_in
 ie.delay = delay
-
-# External Input
-noise = Synapses(poisson, P, model='w:1',on_pre='v+=w', method='euler')
-noise.connect(i=np.random.randint((NE+NI), size=((NE+NI)*((NE+NI)/10))), j=np.repeat(np.arange(NE+NI), ((NE+NI)/10)))
-noise.w = J_ex
-noise.delay = delay
 
 
 # ###########################################
