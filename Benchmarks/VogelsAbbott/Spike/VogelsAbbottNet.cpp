@@ -1,6 +1,5 @@
 // Vogels Abbot Benchmark Network
 // Author: Nasir Ahmad (Created: 16/09/2016)
-// make FILE='VogelsAbbotNet' EXPERIMENT_DIRECTORY='Experiments'  model -j8
 
 
 /*
@@ -53,8 +52,7 @@ void connect_from_mat(
         continue;
       } else {
         linecount++;
-        if (linecount == 1) continue;
-        //printf("%s\n", line.c_str());
+        if (linecount == 1) continue; // Ignore Header
         ss.clear();
         ss << line;
         ss >> pre >> post >> weight;
@@ -62,9 +60,6 @@ void connect_from_mat(
         postvec.push_back(post - 1);
         weightvec.push_back(weight);
         delayvec.push_back(SYN_PARAMS->delay_range[0] + (linecount % numskipgroups)*timestep);
-        //printf("%d\n", (linecount % numskipgroups));
-
-        //printf("%d, %d, %f\n", pre, post, weight);
       }
     }
     SYN_PARAMS->pairwise_connect_presynaptic = prevec;
@@ -75,6 +70,7 @@ void connect_from_mat(
     Model->AddSynapseGroup(layer1, layer2, SYN_PARAMS);
   }
 }
+
 
 int main (int argc, char *argv[]){
   // Getting options:
@@ -238,18 +234,6 @@ int main (int argc, char *argv[]){
   */
 
   // Adding connections based upon matrices given
-  /*
-  EXC_OUT_SYN_PARAMS->delay_range[0] = num_timesteps_min_delay*timestep;
-  EXC_OUT_SYN_PARAMS->delay_range[1] = num_timesteps_max_delay*timestep + 3*timestep;
-  connect_from_mat(
-    EXCITATORY_NEURONS[0], EXCITATORY_NEURONS[0],
-    EXC_OUT_SYN_PARAMS, 
-    "../../ee.wmat",
-    BenchModel,
-    0, 3200);
-  EXC_OUT_SYN_PARAMS->delay_range[0] = num_timesteps_min_delay*timestep;
-  EXC_OUT_SYN_PARAMS->delay_range[1] = num_timesteps_max_delay*timestep;
-  */
   connect_from_mat(
       EXCITATORY_NEURONS[0], EXCITATORY_NEURONS[0],
       EXC_OUT_SYN_PARAMS, 
