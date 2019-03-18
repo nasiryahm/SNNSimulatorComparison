@@ -19,6 +19,8 @@
 # You should have received a copy of the GNU General Public License
 # along with NEST.  If not, see <http://www.gnu.org/licenses/>.
 
+# This model has been modified by Nasir Ahmad for the purposes of benchmarking
+
 import nest
 import nest.raster_plot
 import pylab

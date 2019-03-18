@@ -27,6 +27,7 @@ for s in simulators:
 
 
 fig, ax = plt.subplots()
+barwidth = 0.3
 #ax.set_title("Comparing Simulators with the Vogels-Abbott Benchmark", size=12)
 for index, s in enumerate(simulators):
     fillcolor = 'k'
@@ -40,13 +41,13 @@ for index, s in enumerate(simulators):
         eightextrakwargs={'label': "0.8ms Delay"}
 
     ax.bar(
-        [index-0.25],
+        [index-barwidth],
         [eight_timestep_delay_results[index]],
-        align='edge', width=0.25, color=fillcolor, **eightextrakwargs) #, tick_label=s)
+        align='edge', width=barwidth, color=fillcolor, **eightextrakwargs) #, tick_label=s)
     ax.bar(
         [index],
         [single_timestep_delay_results[index]],
-        align='edge', width=0.25, color='white', hatch="/", edgecolor=fillcolor, linewidth=1, **singleextrakwargs) #, tick_label=s)
+        align='edge', width=barwidth, color='white', hatch="/", edgecolor=fillcolor, linewidth=1, **singleextrakwargs) #, tick_label=s)
 plt.legend(frameon=False)
 plt.xticks(range(len(simulators)), simulators, fontsize=12, rotation=-45)
 #ax.set_xticklabels(simulators, fontsize=12, rotation=-45)

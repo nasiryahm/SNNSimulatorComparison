@@ -30,7 +30,6 @@ public:
       {"t_postUpdate", "scalar"},
   });
 
-    /*
     SET_SIM_CODE(
         "$(addtoinSyn) = $(g);\n"
         "$(updatelinsyn);\n"
@@ -71,7 +70,7 @@ public:
         "    $(g) = (newWeight > $(Wmax)) ? $(Wmax) : newWeight;\n"
         //"}\n"
         );
-        */
+    /*
     SET_SIM_CODE(
         "$(addtoinSyn) = $(g);\n"
         "$(updatelinsyn);\n"
@@ -112,6 +111,7 @@ public:
 
     SET_NEEDS_PRE_SPIKE_TIME(true);
     SET_NEEDS_POST_SPIKE_TIME(true);
+    */
 };
 
 IMPLEMENT_MODEL(STDPWeightDependent);

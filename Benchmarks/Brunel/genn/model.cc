@@ -114,11 +114,11 @@ void modelDefinition(NNmodel &model)
     pi->setMaxConnections(Parameters::probabilityConnection*Parameters::numInhibitory);
 
     auto *ee = model.addSynapsePopulation<STDPWeightDependent, PostsynapticModels::DeltaCurr>(
-    //auto *ee = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::DeltaCurr>(
+    //auto *ee = model.addSynapsePopulation<WeightUpdateModels::StaticPulse, PostsynapticModels::DeltaCurr>( // Uncomment for no STDP
         "EE", SynapseMatrixType::RAGGED_INDIVIDUALG, DELAY,
         "E", "E",
         stdp_params, stdp_ini,
-        //{}, excs_ini,
+        //{}, excs_ini, //Uncomment for no STDP
         {}, {});
     ee->setMaxConnections(Parameters::EEMaxRow);
 

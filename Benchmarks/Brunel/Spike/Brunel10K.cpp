@@ -103,10 +103,15 @@ int connect_from_mat(
     SYN_PARAMS->pairwise_connect_delay = delayvec;
     SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE;
     synapse_group_index = Model->AddSynapseGroup(layer1, layer2, SYN_PARAMS);
+  } else {
+    printf("Could not find weight matrices for loading! Have you created these as instructed in the README.md??\n");
+    exit(-1);
   }
 
   return(synapse_group_index);
 }
+
+
 
 int main (int argc, char *argv[]){
   // Getting options:
@@ -356,35 +361,6 @@ int main (int argc, char *argv[]){
       BenchModel);
     */
 
-  /*
-  EXC_OUT_SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE
-  INH_OUT_SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE;
-  INPUT_SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE;
-  int num_e_syns = sparseness*EXC_NEURON_PARAMS->group_shape[1]*EXC_NEURON_PARAMS->group_shape[0];
-  int num_i_syns = sparseness*INH_NEURON_PARAMS->group_shape[1]*INH_NEURON_PARAMS->group_shape[0];
-  int num_in_syns = sparseness*input_neuron_params->group_shape[1]*input_neuron_params->group_shape[0];
-  std::vector<int> ee_preids, ee_postids;
-  std::vector<int> ei_preids, ei_postids;
-  std::vector<int> ie_preids, ie_postids;
-  std::vector<int> ii_preids, ii_postids;
-  std::vector<int> in_e_preids, in_e_postids;
-  std::vector<int> in_i_preids, in_i_postids;
-
-  EXC_OUT_SYN_PARAMS->random_connectivity_probability = sparseness;
-  INH_OUT_SYN_PARAMS->random_connectivity_probability = sparseness;
-  INPUT_SYN_PARAMS->random_connectivity_probability = sparseness;
-
-
-  // Connect all of the populations
-  BenchModel->AddSynapseGroup(EXCITATORY_NEURONS[0], INHIBITORY_NEURONS[0], EXC_OUT_SYN_PARAMS);
-  if (plastic)
-    EXC_OUT_SYN_PARAMS->plasticity_vec.push_back(weightdependent_stdp);
-  BenchModel->AddSynapseGroup(EXCITATORY_NEURONS[0], EXCITATORY_NEURONS[0], EXC_OUT_SYN_PARAMS);
-  BenchModel->AddSynapseGroup(INHIBITORY_NEURONS[0], EXCITATORY_NEURONS[0], INH_OUT_SYN_PARAMS);
-  BenchModel->AddSynapseGroup(INHIBITORY_NEURONS[0], INHIBITORY_NEURONS[0], INH_OUT_SYN_PARAMS);
-  BenchModel->AddSynapseGroup(input_layer_ID, EXCITATORY_NEURONS[0], INPUT_SYN_PARAMS);
-  BenchModel->AddSynapseGroup(input_layer_ID, INHIBITORY_NEURONS[0], INPUT_SYN_PARAMS);
-  */
 
   /*
     COMPLETE NETWORK SETUP
