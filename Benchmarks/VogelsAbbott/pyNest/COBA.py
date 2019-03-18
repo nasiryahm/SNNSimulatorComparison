@@ -1,4 +1,5 @@
 # Vogels Abbott Benchmark
+
 import getopt, sys, timeit
 try:
     optlist, args = getopt.getopt(sys.argv[1:], '', ['fast', 'simtime=', 'num_timesteps_min_delay=', 'num_timesteps_max_delay='])
@@ -8,8 +9,7 @@ except getopt.GetoptError as err:
 
 simtime = 1.0
 fast = False
-num_timesteps_min_delay = 1
-num_timesteps_max_delay = 1
+num_timesteps_delay = 1
 for o, a in optlist:
     if (o == "--fast"):
         fast = True
@@ -17,17 +17,8 @@ for o, a in optlist:
     elif (o == "--simtime"):
         simtime=float(a)
         print("Simulation Time: " + a)
-    elif (o == "--num_timesteps_min_delay"):
-        num_timesteps_min_delay=int(a)
-        if (num_timesteps_max_delay < num_timesteps_min_delay):
-            num_timesteps_max_delay = num_timesteps_min_delay
-        print("Minimum delay (in number of timesteps): " + a)
-    elif (o == "--num_timesteps_max_delay"):
-        num_timesteps_max_delay=int(a)
-        if (num_timesteps_max_delay < num_timesteps_min_delay):
-            print("ERROR: Max delay should not be smaller than min!")
-            exit(1)
-        print("Maximum delay (in number of timesteps): " + a)
+    elif (o == "--num_timesteps_delay"):
+        num_timesteps_delay=int(a)
 
 import nest
 import numpy
@@ -39,8 +30,7 @@ N_total = NE + NI
 N_rec = NE
 
 dt = 0.1
-mindelay = dt*num_timesteps_min_delay
-maxdelay = dt*num_timesteps_max_delay
+delay = dt*num_timesteps_delay
 J_E = 4.0
 J_I = -51.0
 
@@ -53,17 +43,6 @@ simtime=simtime*1000.0
 
 synapse_model = "static_synapse"
 neuron_model = "iaf_cond_exp"
-
-'''
-if (mindelay == maxdelay):
-    nest.SetDefaults(synapse_model, { "delay": mindelay})
-else:
-    nest.SetDefaults(synapse_model, {"delay": 
-        {"distribution": "uniform",
-         "low": mindelay,
-         "high": maxdelay }})
-'''
-
 
 neuron_params = { 
           "V_m": -60.0,
@@ -89,15 +68,11 @@ p = 0.02
 exc_syn_dict ={
         "model": "static_synapse",
         "weight": J_E,
-        "delay": {'distribution': 'uniform', 'low': mindelay, 'high': maxdelay} }
+        "delay": delay }
 inh_syn_dict ={
         "model": "static_synapse",
         "weight":J_I,
-        "delay": {'distribution': 'uniform', 'low': mindelay, 'high': maxdelay} }
-if (mindelay == maxdelay):
-    exc_syn_dict.update({"delay": mindelay})
-    inh_syn_dict.update({"delay": mindelay})
-    
+        "delay": delay }
 
 #prob_conn_dict = {"rule": "pairwise_bernoulli", "p": p}
 
