@@ -31,8 +31,8 @@ All simulations load the same set of weights (ee/ei/ie/ii.wmat which are expecte
 
 The installed python (conda) environment details are located in the conda\_req.txt file.
 
-Results of a simulation of the VogelsAbbott Benchmark with ALL synaptic delays set to 0.8ms
-![0.8ms Delay Figure](Benchmarks/VogelsAbbott/_results/eight_delay_comparison.png)
+Results of a simulation of the VogelsAbbott Benchmark with synaptic delays either all set to 0.1ms, or 0.8ms (with a simulation timestep of 0.1ms in both cases).
+![VogelsAbbott Speed Comparison Figure](Benchmarks/VogelsAbbott/_results/VASpeedComparison.png)
 
 A comparison of the ISI distributions, firing rasters, and firing rates is present in an [iPython notebook](Benchmarks/VogelsAbbott/_results/SimulatorComparisons.ipynb). These results were produced from files which are automatically dumped when the "--fast" option is not used in simulation execution.
 
