@@ -34,6 +34,9 @@ The installed python (conda) environment details are located in the conda\_req.t
 Results of a simulation of the VogelsAbbott Benchmark with synaptic delays either all set to 0.1ms, or 0.8ms (with a simulation timestep of 0.1ms in both cases).
 ![VogelsAbbott Speed Comparison Figure](Benchmarks/VogelsAbbott/_results/VASpeedComparison.png)
 
+Note that all simulators other than NEST employ a forward euler solver to compute updates to the network dynamics, hench NEST is shown in gray.
+
+
 A comparison of the ISI distributions, firing rasters, and firing rates is present in an [iPython notebook](Benchmarks/VogelsAbbott/_results/SimulatorComparisons.ipynb). These results were produced from files which are automatically dumped when the "--fast" option is not used in simulation execution.
 
 #### Multi-threaded Comparison
