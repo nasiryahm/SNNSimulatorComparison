@@ -43,6 +43,8 @@
 
 #include "auryn.h"
 #include <fstream>
+#include <string>
+#include <iostream>
 #include <time.h>       /* clock_t, clock, CLOCKS_PER_SEC */
 #include <iomanip>      // std::setprecision
 
@@ -58,6 +60,8 @@ int main(int ac,char *av[]) {
   string fwmat_ie = "../ie.wmat";
   string fwmat_ii = "../ii.wmat";
 
+  string save = "";
+
   std::stringstream oss;
   string strbuf ;
   string msg;
@@ -69,9 +73,7 @@ int main(int ac,char *av[]) {
 
   double sparseness = 0.02;
   double simtime = 20.;
-
-  NeuronID ne = 3200;
-  NeuronID ni = 800;
+  float networkscale = 1.0;
 
   bool fast = false;
 
@@ -86,6 +88,8 @@ int main(int ac,char *av[]) {
         desc.add_options()
             ("help", "produce help message")
             ("simtime", po::value<double>(), "simulation time")
+            ("networkscale", po::value<float>(), "Network Scale, relative to 4000 Neurons")
+            ("save", po::value<string>(), "Name for Network Saving")
             ("num_timesteps_delay", po::value<int>(), "the number of timesteps of synaptic delay")
             ("fast", "turns off most monitoring to reduce IO")
             ("dir", po::value<string>(), "load/save directory")
@@ -107,6 +111,10 @@ int main(int ac,char *av[]) {
         if (vm.count("simtime")) {
           simtime = vm["simtime"].as<double>();
         } 
+        if (vm.count("networkscale")) {
+          networkscale = vm["networkscale"].as<float>();
+          printf("Multiplying the Network Size (and dividing connectivity) by; %f\n", networkscale);
+        } 
         
         if (vm.count("num_timesteps_delay")) {
           num_timesteps_delay = vm["num_timesteps_delay"].as<int>();
@@ -114,6 +122,10 @@ int main(int ac,char *av[]) {
 
         if (vm.count("fast")) {
           fast = true;
+        } 
+        
+        if (vm.count("save")) {
+          save = vm["save"].as<string>();
         } 
 
         if (vm.count("dir")) {
@@ -146,6 +158,11 @@ int main(int ac,char *av[]) {
     }
 
 
+  // Adjusting the sparseness and neuron number based upon scale
+  sparseness /= networkscale;
+  NeuronID ne = 3200*networkscale;
+  NeuronID ni = 800*networkscale;
+
   auryn_init( ac, av, dir );
   oss << dir  << "/coba." << sys->mpi_rank() << ".";
   string outputfile = oss.str();
@@ -169,26 +186,36 @@ int main(int ac,char *av[]) {
 
   logger->msg("Setting up E connections ...",PROGRESS,true);
 
+
   SparseConnection * con_ee 
-    = new SparseConnection( neurons_e,neurons_e, w, sparseness, GLUT);
+    = new SparseConnection(neurons_e, neurons_e, w, sparseness, GLUT);
 
   SparseConnection * con_ei 
-    = new SparseConnection( neurons_e,neurons_i, w,sparseness,GLUT);
+    = new SparseConnection(neurons_e, neurons_i, w, sparseness, GLUT);
 
 
 
   logger->msg("Setting up I connections ...",PROGRESS,true);
   SparseConnection * con_ie 
-    = new SparseConnection( neurons_i,neurons_e,wi,sparseness,GABA);
+    = new SparseConnection(neurons_i, neurons_e, wi, sparseness, GABA);
 
   SparseConnection * con_ii 
-    = new SparseConnection( neurons_i,neurons_i,wi,sparseness,GABA);
+    = new SparseConnection(neurons_i, neurons_i, wi, sparseness, GABA);
 
-  if ( !fwmat_ee.empty() ) std::cout << "Loading connectivity from file." << std::endl;
-  if ( !fwmat_ee.empty() ) con_ee->load_from_complete_file(fwmat_ee);
-  if ( !fwmat_ei.empty() ) con_ei->load_from_complete_file(fwmat_ei);
-  if ( !fwmat_ie.empty() ) con_ie->load_from_complete_file(fwmat_ie);
-  if ( !fwmat_ii.empty() ) con_ii->load_from_complete_file(fwmat_ii);
+
+
+
+  if (networkscale == 1.0){
+    if ( !fwmat_ee.empty() ) std::cout << "Loading connectivity from file." << std::endl;
+    if ( !fwmat_ee.empty() ) con_ee->load_from_complete_file(fwmat_ee);
+    if ( !fwmat_ei.empty() ) con_ei->load_from_complete_file(fwmat_ei);
+    if ( !fwmat_ie.empty() ) con_ie->load_from_complete_file(fwmat_ie);
+    if ( !fwmat_ii.empty() ) con_ii->load_from_complete_file(fwmat_ii);
+  }
+
+  if (networkscale != 1.0){
+    sys->save_network_state_text(save); //std::to_string(networkscale));
+  }
 
 
 
@@ -207,6 +234,7 @@ int main(int ac,char *av[]) {
     filename << outputfile << "i.ras";
     SpikeMonitor * smon_i = new SpikeMonitor( neurons_i, filename.str().c_str() );
   }
+
 
 
   // RateChecker * chk = new RateChecker( neurons_e , -0.1 , 1000. , 100e-3);
