@@ -58,6 +58,10 @@ Results of a simulation of the Brunel10K Benchmark with and without synaptic pla
 Note that Brian2, NEST, and Auryn use input stimulation methods which approximate the effect of Poisson Firing Input Neurons in order to achieve a speedup.
 Spike, GeNN and ANNarchy provide inputs through modelled neurons with Poisson distribution sampled spike times.
 
+#### Multi-threaded Comparison
+![Multi-threaded Comparison](Benchmarks/Brunel/_results/auryn_multithreaded/multithreaded_comparison.png)
+Above, only Spike and Auryn are compared. Auryn is benchmarked with 1, 2, 4, and 8 threads on a system with a 16 core Intel Xeon E5-2623 v4. These benchmarks are shown as black points on the plot above. An exponential decay curve is fit to the Auryn datapoints as shown in black. For comparison, the single-threaded, single-GPU speed of Spike is shown in red.
+
 ## Installation
 Spike, Auryn and NEST simulator are auto compiled (using make). Ensure that the dependencies for these libraries are pre-installed. To see these, please visit the github pages for these projects.
 
