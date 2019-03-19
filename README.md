@@ -48,9 +48,15 @@ Source Paper:
 Brunel N. Dynamics of sparsely connected networks of excitatory and inhibitory spiking neurons. J Comput Neurosci. 2000;8: 183–208.
 
 The model implemented is a specific version of this network as implemented by the Auryn and ANNarchy networks (see repositories).
+The connectivity for this network produces files which are too large to be contained within this repository.
+Before running the Brunel benchmarks, first run the executable [createConnectivity](Benchmarks/Brunel/createConnectivity.sh) in order to produce a set of connectivity matrices using Auryn.
+This requires that Auryn is installed in the Simulators/auryn directory.
 
 Results of a simulation of the Brunel10K Benchmark with and without synaptic plasticity
 ![Brunel10K Plasticity Benchmark](Benchmarks/Brunel/_results/Brunel_Comparison.png)
+
+Note that Brian2, NEST, and Auryn use input stimulation methods which approximate the effect of Poisson Firing Input Neurons in order to achieve a speedup.
+Spike, GeNN and ANNarchy provide inputs through modelled neurons with Poisson distribution sampled spike times.
 
 ## Installation
 Spike, Auryn and NEST simulator are auto compiled (using make). Ensure that the dependencies for these libraries are pre-installed. To see these, please visit the github pages for these projects.

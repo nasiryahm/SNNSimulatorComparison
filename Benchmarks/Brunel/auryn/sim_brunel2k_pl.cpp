@@ -57,7 +57,7 @@ int main(int ac,char *av[]) {
   double w = 0.1e-3; // 0.1mV PSC size
   double wext = 0.1e-3; 
   double sparseness = 0.1;
-  double simtime = 1.;
+  double simtime = 0.;
 
   double lambda = 1e-2; 
   // For the benchmark this value was changed to 1e-9 to 
