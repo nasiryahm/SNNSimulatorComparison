@@ -67,6 +67,9 @@ void connect_from_mat(
     SYN_PARAMS->pairwise_connect_delay = delayvec;
     SYN_PARAMS->connectivity_type = CONNECTIVITY_TYPE_PAIRWISE;
     Model->AddSynapseGroup(layer1, layer2, SYN_PARAMS);
+  } else {
+    printf("Could not load connectivity matrix: %s\n", filename.c_str());
+    exit(-1);
   }
 }
 
@@ -76,13 +79,16 @@ int main (int argc, char *argv[]){
   float simtime = 20.0;
   bool fast = false;
   bool no_TG = false;
-  int num_timesteps_delay = 1;
+  int num_timesteps_delay = 8;
+  int networkscale = 1;
+
   const char* const short_opts = "";
   const option long_opts[] = {
     {"simtime", 1, nullptr, 0},
     {"fast", 0, nullptr, 1},
     {"num_timesteps_delay", 1, nullptr, 2},
-    {"NOTG", 0, nullptr, 3}
+    {"NOTG", 0, nullptr, 3},
+    {"networkscale", 1, nullptr, 4}
   };
   // Check the set of options
   while (true) {
@@ -107,6 +113,10 @@ int main (int argc, char *argv[]){
       case 3:
         printf("TURNING OFF TIMESTEP GROUPING\n");
         no_TG = true;
+        break;
+      case 4:
+        printf("Running with Network Scaled by: %s\n", optarg);
+        networkscale = std::stoi(optarg);
         break;
     }
   };
@@ -161,9 +171,9 @@ int main (int argc, char *argv[]){
   vector<int> INHIBITORY_NEURONS;
   // Creating a single exc and inh population for now
   EXC_NEURON_PARAMS->group_shape[0] = 1;
-  EXC_NEURON_PARAMS->group_shape[1] = 3200;
+  EXC_NEURON_PARAMS->group_shape[1] = 3200*networkscale;
   INH_NEURON_PARAMS->group_shape[0] = 1;
-  INH_NEURON_PARAMS->group_shape[1] = 800;
+  INH_NEURON_PARAMS->group_shape[1] = 800*networkscale;
   EXCITATORY_NEURONS.push_back(BenchModel->AddNeuronGroup(EXC_NEURON_PARAMS));
   INHIBITORY_NEURONS.push_back(BenchModel->AddNeuronGroup(INH_NEURON_PARAMS));
 
@@ -215,29 +225,47 @@ int main (int argc, char *argv[]){
   */
 
   // Adding connections based upon matrices given
+  std::string connFile = "../../ee.wmat";
+  if (networkscale != 1){
+    connFile = "../../auryn/" + std::to_string(networkscale) + ".0.0.wmat";
+  }
   connect_from_mat(
       EXCITATORY_NEURONS[0], EXCITATORY_NEURONS[0],
       EXC_OUT_SYN_PARAMS, 
-      "../../ee.wmat",
+      connFile.c_str(),
       BenchModel,
       timestep);
 
+  connFile = "../../ei.wmat";
+  if (networkscale != 1){
+    connFile = "../../auryn/" + std::to_string(networkscale) + ".1.0.wmat";
+  }
   connect_from_mat(
     EXCITATORY_NEURONS[0], INHIBITORY_NEURONS[0],
     EXC_OUT_SYN_PARAMS, 
-    "../../ei.wmat",
+    connFile.c_str(),
     BenchModel,
     timestep);
+  
+  connFile = "../../ie.wmat";
+  if (networkscale != 1){
+    connFile = "../../auryn/" + std::to_string(networkscale) + ".2.0.wmat";
+  }
   connect_from_mat(
     INHIBITORY_NEURONS[0], EXCITATORY_NEURONS[0],
     INH_OUT_SYN_PARAMS, 
-    "../../ie.wmat",
+    connFile.c_str(),
     BenchModel,
     timestep);
+  
+  connFile = "../../ii.wmat";
+  if (networkscale != 1){
+    connFile = "../../auryn/" + std::to_string(networkscale) + ".3.0.wmat";
+  }
   connect_from_mat(
     INHIBITORY_NEURONS[0], INHIBITORY_NEURONS[0],
     INH_OUT_SYN_PARAMS, 
-    "../../ii.wmat",
+    connFile.c_str(),
     BenchModel,
     timestep);
 

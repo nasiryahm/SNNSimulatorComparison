@@ -73,7 +73,7 @@ int main(int ac,char *av[]) {
 
   double sparseness = 0.02;
   double simtime = 20.;
-  float networkscale = 1.0;
+  int networkscale = 1;
 
   bool fast = false;
 
@@ -88,7 +88,7 @@ int main(int ac,char *av[]) {
         desc.add_options()
             ("help", "produce help message")
             ("simtime", po::value<double>(), "simulation time")
-            ("networkscale", po::value<float>(), "Network Scale, relative to 4000 Neurons")
+            ("networkscale", po::value<int>(), "Network Scale, relative to 4000 Neurons")
             ("save", po::value<string>(), "Name for Network Saving")
             ("num_timesteps_delay", po::value<int>(), "the number of timesteps of synaptic delay")
             ("fast", "turns off most monitoring to reduce IO")
@@ -112,8 +112,8 @@ int main(int ac,char *av[]) {
           simtime = vm["simtime"].as<double>();
         } 
         if (vm.count("networkscale")) {
-          networkscale = vm["networkscale"].as<float>();
-          printf("Multiplying the Network Size (and dividing connectivity) by; %f\n", networkscale);
+          networkscale = vm["networkscale"].as<int>();
+          printf("Multiplying the Network Size (and dividing connectivity) by; %d\n", networkscale);
         } 
         
         if (vm.count("num_timesteps_delay")) {
@@ -159,7 +159,8 @@ int main(int ac,char *av[]) {
 
 
   // Adjusting the sparseness and neuron number based upon scale
-  sparseness /= networkscale;
+  sparseness /= (float)networkscale;
+  printf("Network connections are %f sparse.\n", sparseness);
   NeuronID ne = 3200*networkscale;
   NeuronID ni = 800*networkscale;
 
@@ -205,7 +206,7 @@ int main(int ac,char *av[]) {
 
 
 
-  if (networkscale == 1.0){
+  if (networkscale == 1){
     if ( !fwmat_ee.empty() ) std::cout << "Loading connectivity from file." << std::endl;
     if ( !fwmat_ee.empty() ) con_ee->load_from_complete_file(fwmat_ee);
     if ( !fwmat_ei.empty() ) con_ei->load_from_complete_file(fwmat_ei);
@@ -213,7 +214,7 @@ int main(int ac,char *av[]) {
     if ( !fwmat_ii.empty() ) con_ii->load_from_complete_file(fwmat_ii);
   }
 
-  if (networkscale != 1.0){
+  if (!save.empty()){
     sys->save_network_state_text(save); //std::to_string(networkscale));
   }
 
