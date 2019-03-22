@@ -71,6 +71,7 @@ void ragged_connectivity_from_mat(
       }
     }
   }
+
   
   std::vector<int> precount;
   for (int pre = 0; pre < numPre; pre++)
@@ -81,8 +82,13 @@ void ragged_connectivity_from_mat(
     ind[prevec[indx]*maxRows + precount[prevec[indx]]] = postvec[indx];
     precount[prevec[indx]]++;
   }
+  int MaxRow = 0;
   for (int pre = 0; pre < numPre; pre++){
     rowLength[pre] = precount[pre];
+    if (precount[pre] > MaxRow)
+      MaxRow = precount[pre];
   }
+  printf("Number of Weights Loaded from %s; %d\n", filename.c_str(), weightvec.size());
+  printf("Max Row Length: %d\n", MaxRow);
 
 };

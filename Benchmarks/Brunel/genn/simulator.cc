@@ -142,7 +142,7 @@ int main (int argc, char *argv[])
     ofstream weightfile;
     weightfile.open(("./Weights.bin"), ios::out | ios::binary);
 
-    for (int pre = 0; pre < 10000; pre++){
+    for (int pre = 0; pre < 8000; pre++){
       for (int post = 0; post < CEE.rowLength[pre]; post++){
         weightfile.write((char*)&gEE[pre*Parameters::EEMaxRow + post], sizeof(scalar));
       }

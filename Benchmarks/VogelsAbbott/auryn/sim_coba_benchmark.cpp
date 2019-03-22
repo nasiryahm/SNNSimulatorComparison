@@ -53,7 +53,7 @@ using namespace auryn;
 namespace po = boost::program_options;
 
 int main(int ac,char *av[]) {
-  string dir = "/tmp";
+  string dir = "./";
 
   string fwmat_ee = "../ee.wmat";
   string fwmat_ei = "../ei.wmat";
@@ -238,7 +238,7 @@ int main(int ac,char *av[]) {
 
 
 
-  // RateChecker * chk = new RateChecker( neurons_e , -0.1 , 1000. , 100e-3);
+  //RateChecker * chk = new RateChecker( neurons_e , -0.1 , 1000. , 100e-3);
   //printf("Auryn timestep: %f", sys->auryn_timestep);
   
   logger->msg("Simulating ..." ,PROGRESS,true);

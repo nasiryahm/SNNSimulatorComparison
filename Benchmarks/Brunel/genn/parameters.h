@@ -27,7 +27,7 @@ namespace Parameters
     const unsigned int numExcitatory = (unsigned int)std::round(((double)numNeurons * excitatoryInhibitoryRatio) / (1.0 + excitatoryInhibitoryRatio));
     const unsigned int numInhibitory = numNeurons - numExcitatory;
 
-    const unsigned int EEMaxRow = 902;
+    const unsigned int EEMaxRow = 884;
     const unsigned int EIMaxRow = 256;
     const unsigned int IIMaxRow = 247;
     const unsigned int IEMaxRow = 893;

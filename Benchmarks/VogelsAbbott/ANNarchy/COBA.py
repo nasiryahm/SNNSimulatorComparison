@@ -71,20 +71,20 @@ delayval = num_timesteps_delay*timestep
 
 A = mmread('../ee.wmat')
 Cee = Projection(pre=Pe, post=Pe, target='exc')
-Cee.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
+Cee.connect_from_sparse(A.tocsr(), delays=delayval)
 
 A = mmread('../ei.wmat')
 Cei = Projection(pre=Pe, post=Pi, target='exc')
-Cei.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
+Cei.connect_from_sparse(A.tocsr(), delays=delayval)
 
 
 A = mmread('../ie.wmat')
 Cie = Projection(pre=Pi, post=Pe, target='inh')
-Cie.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
+Cie.connect_from_sparse(A.tocsr(), delays=delayval)
 
 A = mmread('../ii.wmat')
 Cii = Projection(pre=Pi, post=Pi, target='inh')
-Cii.connect_from_sparse(A.tocsr()) #weights=0.4*gleak, delays=delayval)
+Cii.connect_from_sparse(A.tocsr(), delays=delayval)
 
 
 compile()

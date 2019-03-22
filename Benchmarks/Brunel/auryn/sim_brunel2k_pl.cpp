@@ -226,15 +226,17 @@ int main(int ac,char *av[]) {
           neurons_e,
           neurons_e,
           w,
-          sparseness
+          sparseness,
+          MEM
           );
-    con_ee_stdp->set_transmitter(MEM);
+    //con_ee_stdp->set_transmitter(MEM);
     con_ee_stdp->set_name("E->E");
     con_ee_stdp->set_max_weight(3*w);
     con_ee_stdp->set_alpha(2.02);
     con_ee_stdp->set_lambda(lambda); 
     con_ee_stdp->sanity_check();
-    if ( !fwmat_ee.empty() ) con_ee_stdp->load_from_complete_file(fwmat_ee);
+    con_ee_stdp->load_from_complete_file("../ee.wmat");
+    //if ( !fwmat_ee.empty() ) con_ee_stdp->load_from_complete_file(fwmat_ee);
   } else {
     SparseConnection * con_ee;
     con_ee = new SparseConnection( neurons_e,neurons_e,w,sparseness,MEM);

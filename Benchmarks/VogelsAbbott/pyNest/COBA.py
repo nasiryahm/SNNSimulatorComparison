@@ -63,6 +63,9 @@ nodes = nest.Create(neuron_model, N_total, params=neuron_params)
 nodes_E = nodes[:NE]
 nodes_I = nodes[NE:]
 
+nest.SetStatus(nodes, "V_m", -60.0)
+
+
 
 # Setting up Synapses
 p = 0.02
