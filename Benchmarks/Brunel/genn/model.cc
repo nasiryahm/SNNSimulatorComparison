@@ -67,7 +67,7 @@ void modelDefinition(NNmodel &model)
           0.0, // pretrace
           0.0, // t_preupdate
           0.0, // posttrace
-          0.0 // t_postupdate
+          0.0  // t_postupdate
     );
     STDPWeightDependent::ParamValues stdp_params(
       20.0,  // 0 - Potentiation time constant (ms)

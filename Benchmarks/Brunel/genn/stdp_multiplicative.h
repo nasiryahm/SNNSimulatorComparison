@@ -25,11 +25,10 @@ public:
     SET_VARS({
       {"g", "scalar"},
       {"pre_trace", "scalar"},
-      {"t_preUpdate", "scalar"},
       {"post_trace", "scalar"},
+      {"t_preUpdate", "scalar"},
       {"t_postUpdate", "scalar"},
   });
-
     SET_SIM_CODE(
         "$(addtoinSyn) = $(g);\n"
         "$(updatelinsyn);\n"
@@ -111,7 +110,7 @@ public:
 
     SET_NEEDS_PRE_SPIKE_TIME(true);
     SET_NEEDS_POST_SPIKE_TIME(true);
-    */
+        */
 };
 
 IMPLEMENT_MODEL(STDPWeightDependent);
