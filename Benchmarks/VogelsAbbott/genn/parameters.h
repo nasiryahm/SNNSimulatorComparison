@@ -8,7 +8,7 @@
 //------------------------------------------------------------------------
 namespace Parameters
 {
-    const double timestep = 1.0;
+    const double timestep = 0.1;
 
     // number of cells
     const unsigned int numNeurons = 4000;

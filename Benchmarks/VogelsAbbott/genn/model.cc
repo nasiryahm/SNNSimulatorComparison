@@ -14,7 +14,7 @@
 void modelDefinition(NNmodel &model)
 {
     initGeNN();
-    model.setDT(0.1);
+    model.setDT(Parameters::timestep);
     model.setName("va_benchmark");
 
     GENN_PREFERENCES::autoInitSparseVars = true;
